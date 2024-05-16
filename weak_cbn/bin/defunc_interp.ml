@@ -13,14 +13,17 @@ let eval t =
     | Var x ->
       let t', e' = get_env e |> StringMap.find x in
       eval t' e' k
-    | Abs _ -> k t e
-    | App (t1, t2) -> begin
-      eval t1 e @@ fun t1' e' ->
-      match t1' with
+    | Abs _ -> apply t e k
+    | App (t1, t2) -> eval t1 e ((t2, e) :: k)
+  and apply t e k =
+    match k with
+    | [] -> (t, e)
+    | (t', e') :: _k' -> begin
+      match t' with
       | Abs (x, t') ->
-        let e' = get_env e' |> StringMap.add x (t2, e) |> set_env in
-        eval t' e' k
+        let e = get_env e |> StringMap.add x (t', e') |> set_env in
+        eval t e k
       | _ -> assert false
     end
   in
-  eval t (Env StringMap.empty) (fun t e -> (t, e))
+  eval t (Env StringMap.empty) []
