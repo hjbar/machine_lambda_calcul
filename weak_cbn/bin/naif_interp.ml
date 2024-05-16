@@ -7,7 +7,7 @@ let get_env e = match e with Env e -> e
 
 let set_env e = Env e
 
-let eval t =
+let eval, eval_with_env =
   let rec eval t e =
     match t with
     | Var x ->
@@ -22,4 +22,4 @@ let eval t =
       | _ -> assert false
     end
   in
-  eval t (Env StringMap.empty)
+  ((fun t -> eval t @@ Env StringMap.empty), fun t env -> eval t env)
