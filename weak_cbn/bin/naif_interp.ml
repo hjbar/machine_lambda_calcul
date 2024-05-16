@@ -1,25 +1,19 @@
 open Lambda
-module StringMap = Map.Make (String)
 
-type env = Env of (lambda_term * env) StringMap.t
+let rec interp t e =
+  match t with
+  | Var x ->
+    let t', e' = get_env e |> StringMap.find x in
+    interp t' e'
+  | Abs _ -> (t, e)
+  | App (t1, t2) -> begin
+    match interp t1 e with
+    | Abs (x, t'), e' ->
+      let e' = get_env e' |> StringMap.add x (t2, e) |> set_env in
+      interp t' e'
+    | _ -> assert false
+  end
 
-let get_env e = match e with Env e -> e
+let eval t = interp t (Env StringMap.empty)
 
-let set_env e = Env e
-
-let eval, eval_with_env =
-  let rec eval t e =
-    match t with
-    | Var x ->
-      let t', e' = get_env e |> StringMap.find x in
-      eval t' e'
-    | Abs _ -> (t, e)
-    | App (t1, t2) -> begin
-      match eval t1 e with
-      | Abs (x, t'), e' ->
-        let e' = get_env e' |> StringMap.add x (t2, e) |> set_env in
-        eval t' e'
-      | _ -> assert false
-    end
-  in
-  ((fun t -> eval t @@ Env StringMap.empty), fun t env -> eval t env)
+let eval_with_env t env = interp t env
