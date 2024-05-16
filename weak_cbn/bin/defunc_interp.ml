@@ -18,11 +18,11 @@ let eval, eval_with_env =
   and apply t e k =
     match k with
     | [] -> (t, e)
-    | (t', e') :: _k' -> begin
-      match t' with
-      | Abs (x, t') ->
+    | (t', e') :: k' -> begin
+      match t with
+      | Abs (x, t) ->
         let e = get_env e |> StringMap.add x (t', e') |> set_env in
-        eval t e k
+        eval t e k'
       | _ -> assert false
     end
   in
