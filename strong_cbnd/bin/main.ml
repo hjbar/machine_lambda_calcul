@@ -30,6 +30,26 @@ let () =
   else pp_result y res;
   Format.print_newline ()
 
+let () =
+  let i = Abs ("x", Var "x") in
+  let omega =
+    let delta = Abs ("x", App (Var "x", Var "x")) in
+    App (delta, delta)
+  in
+  let a = Abs ("y", Abs ("z", App (i, Var "z"))) in
+  let t =
+    App (Abs ("x", App (App (Var "c", Var "x"), Var "x")), App (a, omega))
+  in
+  let res = App (App (Var "c", Abs ("z0", Var "z0")), Abs ("z0", Var "z0")) in
+
+  let calc = eval t |> fst in
+  if not @@ alpha_equiv calc res then begin
+    pp_lambda calc;
+    failwith "Error with test3 in strong_cbnd_naif"
+  end
+  else pp_result t res;
+  Format.print_newline ()
+
 (*
 let () =
   let omega =
