@@ -38,7 +38,7 @@ let () =
     App (delta, delta)
   in
   let a = Abs ("y", Abs ("z", App (i, Var "z"))) in
-  let b = Abs ("x", Abs ("c", App (App (Var "c", Var "x"), Var "x"))) in
+  let b = Abs ("x", App (App (Var "c", Var "x"), Var "x")) in
   let t = App (b, App (a, omega)) in
   let res = App (App (Var "c", Abs ("z0", Var "z0")), Abs ("z0", Var "z0")) in
 
@@ -96,7 +96,7 @@ let () =
     App (delta, delta)
   in
   let a = Abs ("y", Abs ("z", App (i, Var "z"))) in
-  let b = Abs ("x", Abs ("c", App (App (Var "c", Var "x"), Var "x"))) in
+  let b = Abs ("x", App (App (Var "c", Var "x"), Var "x")) in
   let t = App (b, App (a, omega)) in
   let res = App (App (Var "c", Abs ("z0", Var "z0")), Abs ("z0", Var "z0")) in
 
