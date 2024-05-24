@@ -2,6 +2,8 @@
 
 open Lambda
 
+type identifier = string
+
 type sem =
   | Sem of (sem -> sem)
   | Neutral of (unit -> lambda_term)

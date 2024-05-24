@@ -68,11 +68,4 @@ let rec interp (e : env) (t : lambda_term) : value =
 
 (* The functions of eval *)
 
-let eval t =
-  let env = Hashtbl.create 16 in
-  let t' = interp env t |> reify in
-  (t', env)
-
-let eval_with_env t env =
-  let t' = interp env t |> reify in
-  (t', env)
+let eval t = interp (Hashtbl.create 16) t |> reify

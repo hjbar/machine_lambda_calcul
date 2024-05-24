@@ -1,6 +1,18 @@
 open Lambda
 
-let rec interp t e =
+(* Define some types *)
+
+module StringMap = Map.Make (String)
+
+type env = Env of (lambda_term * env) StringMap.t
+
+let get_env e = match e with Env e -> e
+
+let set_env e = Env e
+
+(* Functions of interp *)
+
+let rec interp (t : lambda_term) (e : env) : lambda_term * env =
   match t with
   | Var x ->
     let t', e' = get_env e |> StringMap.find x in
@@ -14,6 +26,6 @@ let rec interp t e =
     | _ -> assert false
   end
 
-let eval t = interp t (Env StringMap.empty)
+(* Functions of eval *)
 
-let eval_with_env t env = interp t env
+let eval t = interp t (Env StringMap.empty) |> fst
