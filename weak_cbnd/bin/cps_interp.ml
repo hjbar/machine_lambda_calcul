@@ -13,29 +13,32 @@ and env = stoval ref Env.t
 
 (* Functions of interp *)
 
-let rec interp (t : lambda_term) (e : env) : expval =
+let rec interp (t : lambda_term) (e : env) (k : expval -> expval) : expval =
   match t with
   | Var x -> begin
     let var = Env.find x e in
-    match !var with
-    | Delayed (t', e') ->
-      let v = interp t' e' in
-      var := Computed v;
-      v
-    | Computed v -> v
+    let v =
+      match !var with
+      | Delayed (t', e') ->
+        interp t' e' @@ fun v ->
+        var := Computed v;
+        v
+      | Computed v -> v
+    in
+    k v
   end
-  | Abs _ -> Closure (t, e)
+  | Abs _ -> k @@ Closure (t, e)
   | App (t1, t2) -> begin
-    match interp t1 e with
+    interp t1 e @@ fun expval ->
+    match expval with
     | Closure (Abs (x, t'), e') ->
       let e' = Env.add x (ref @@ Delayed (t2, e)) e' in
-      interp t' e'
+      interp t' e' k
     | _ -> assert false
   end
 
 (* Eval functions *)
 
 let eval t =
-  let (Closure (t, _env)) = interp t Env.empty in
-  t |> ignore;
-  failwith "TODO"
+  let (Closure (t, _env)) = interp t Env.empty Fun.id in
+  t

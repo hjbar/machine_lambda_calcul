@@ -45,12 +45,14 @@ let () =
   end
   else pp_result t res
 
+(*
 let () =
   let omega =
     let delta = Abs ("x", App (Var "x", Var "x")) in
     App (delta, delta)
   in
   eval omega |> pp_result omega
+*)
 
 let () = Format.printf "weak_cbnd_cps : OK\n%!"
 
