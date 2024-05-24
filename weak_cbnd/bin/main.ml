@@ -20,4 +20,4 @@ let () = test_weak eval strat "cps" false
 
 open Defunc_interp
 
-let () = test_weak eval strat "defunc" true
+let () = test_weak eval strat "defunc" false
