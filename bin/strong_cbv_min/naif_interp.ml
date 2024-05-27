@@ -2,22 +2,69 @@
 
 open Lambda
 
-type identifier = string
+type extended_terms =
+  | Var of string
+  | App of extended_terms * extended_terms
+  | Abs of string * extended_terms
+  | Ext of value list
 
-type sem =
-  | Sem of (sem -> sem)
-  | Neutral of (unit -> lambda_term)
-  | Cache of lambda_term cache * sem
+and value =
+  | Cst of string
+  | Lam of string * extended_terms
+  | Lst of value list
 
-and 'a cache = 'a option ref
+(* Some utils functions *)
 
-module Dict = Map.Make (struct
-  type t = identifier
+let rec extended_to_term : extended_terms -> lambda_term = function
+  | Var x -> Var x
+  | App (t1, t2) -> App (extended_to_term t1, extended_to_term t2)
+  | Abs (x, t) -> Abs (x, extended_to_term t)
+  | Ext _ -> assert false
 
-  let compare = compare
-end)
+let rec term_to_extended : lambda_term -> extended_terms = function
+  | Var x -> Var x
+  | App (t1, t2) -> App (term_to_extended t1, term_to_extended t2)
+  | Abs (x, t) -> Abs (x, term_to_extended t)
 
-type env = sem Dict.t
+let rec pp_extended : extended_terms -> unit = function
+  | Var x -> print_flush @@ Format.sprintf "%s" x
+  | App (t1, t2) -> begin
+    print_flush "(";
+    pp_extended t1;
+    pp_extended t2;
+    print_flush ")"
+  end
+  | Abs (x, t) -> begin
+    print_flush @@ Format.sprintf "(%s" x;
+    pp_extended t;
+    print_flush ")"
+  end
+  | Ext l -> begin
+    print_flush "[";
+    List.iter
+      (fun t ->
+        pp_value t;
+        print_flush ", " )
+      l;
+    print_flush "]"
+  end
+
+and pp_value : value -> unit = function
+  | Cst x -> print_flush @@ Format.sprintf "%s" x
+  | Lam (x, t) -> begin
+    print_flush @@ Format.sprintf "(%s" x;
+    pp_extended t;
+    print_flush ")"
+  end
+  | Lst l -> begin
+    print_flush "[";
+    List.iter
+      (fun t ->
+        pp_value t;
+        print_flush ", " )
+      l;
+    print_flush "]"
+  end
 
 (* Functions for variable names *)
 
@@ -27,67 +74,41 @@ let gensym : unit -> string =
     incr cpt;
     Format.sprintf "x%d" !cpt
 
-let free_var : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "y%d" !cpt
-
 (* Functions for interp *)
 
-let abstract_variable (x : identifier) : sem = Neutral (fun () -> Var x)
+let rec n (b : extended_terms) : extended_terms = r @@ v b
 
-let env_lookup (x : identifier) (e : env) : sem =
-  match Dict.find_opt x e with
-  | None -> abstract_variable @@ free_var ()
-  | Some var -> var
+and r : value -> extended_terms = function
+  | Cst x -> Var x
+  | Lam (x, b) ->
+    let y = gensym () in
+    let t = n @@ App (Abs (x, b), Ext [ Cst y ]) in
+    Abs (y, t)
+  | Lst l -> begin
+    let t_opt =
+      List.fold_left
+        begin
+          Fun.flip
+            begin
+              fun t -> function
+                | None -> Some (r t)
+                | Some t' -> Some (App (t', r t))
+            end
+        end
+        None l
+    in
+    match t_opt with None -> assert false | Some res -> res
+  end
 
-let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
-  match !c with
-  | None ->
-    let cache = t () in
-    c := Some cache;
-    cache
-  | Some cache -> cache
+and v : extended_terms -> value = function
+  | Var x -> Cst x
+  | App (t1, t2) -> Lst [ v t1; v t2 ]
+  | Abs (x, t) -> Lam (x, n t)
+  | Ext l -> Lst l
 
-let rec reify : sem -> lambda_term = function
-  | Sem f ->
-    let x = gensym () in
-    Abs (x, abstract_variable x |> f |> reify)
-  | Neutral l -> l ()
-  | Cache (c, v) -> cached_call c (fun () -> reify v)
+(* Functions of eval *)
 
-let to_sem (f : sem -> sem) : sem = Sem f
-
-let rec from_sem : sem -> sem -> sem = function
-  | Sem f -> f
-  | Neutral l -> apply_neutral l
-  | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l)
-  | Cache (_, v) -> from_sem v
-
-and apply_neutral (l : unit -> lambda_term) (v : sem) : sem =
-  let f () =
-    let v' = reify v in
-    let l' = l () in
-    App (l', v')
-  in
-  Neutral f
-
-let mount_cache (v : sem) : sem =
-  match v with Cache _ -> v | _ -> Cache (ref None, v)
-
-let rec interp (t : lambda_term) (e : env) : sem =
-  match t with
-  | Var x -> env_lookup x e
-  | Abs (x, t') ->
-    to_sem @@ fun v ->
-    let e' = Dict.add x (mount_cache v) e in
-    interp t' e'
-  | App (t1, t2) ->
-    let v2 = interp t2 e in
-    let v1 = interp t1 e in
-    from_sem v1 v2
-
-(* Functions of interp *)
-
-let eval (t : lambda_term) : lambda_term = interp t Dict.empty |> reify
+let eval (t : lambda_term) : lambda_term =
+  let t' = term_to_extended t |> n in
+  pp_extended t';
+  extended_to_term t'

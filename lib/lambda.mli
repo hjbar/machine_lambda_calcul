@@ -23,8 +23,10 @@ val pp_result : lambda_term -> lambda_term -> unit
 
 (* Some functions of testing *)
 
-val test_eval : lambda_term -> lambda_term -> (lambda_term -> lambda_term) -> string -> unit
+val test_eval :
+  lambda_term -> lambda_term -> (lambda_term -> lambda_term) -> string -> unit
 
 val test_weak : (lambda_term -> lambda_term) -> string -> string -> bool -> unit
 
-val test_strong : (lambda_term -> lambda_term) -> string -> string -> bool -> unit
+val test_strong :
+  (lambda_term -> lambda_term) -> string -> string -> bool -> unit
