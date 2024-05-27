@@ -1,10 +1,13 @@
-default: clean build clear exec
+default: clean fmt build clear exec
 
 clean:
 	dune clean
 
 build:
 	dune build
+
+fmt:
+	dune fmt
 
 clear:
 	clear
