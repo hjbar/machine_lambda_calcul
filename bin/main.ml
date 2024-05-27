@@ -2,9 +2,10 @@ let () =
   let () = print_newline () in
   let () = print_newline () in
 
-  Weak_cbn.test ();
-  Weak_cbnd.test ();
-  Strong_cbv.test ();
-  Strong_cbnd.test ();
+  let () = Weak_cbn.test () in
+  let () = Weak_cbnd.test () in
+  let () = Strong_cbv_min.test () in
+  let () = Strong_cbv.test () in
+  let () = Strong_cbnd.test () in
 
   ()
