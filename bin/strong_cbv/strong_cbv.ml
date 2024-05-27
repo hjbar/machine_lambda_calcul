@@ -1,7 +1,9 @@
 open Lambda
 
 let test () =
+  (* Début test *)
   let strat = "strong_cbv" in
+  let () = println_flush "Strong_cbv tests :" in
   let () = print_newline () in
 
   (* Test pour naif_interp *)
@@ -16,4 +18,8 @@ let test () =
   let open Strong_cbv_defunc_interp in
   let () = test_strong eval strat "defunc" true in
 
+  (* Fin test *)
+  let () = println_flush "Strong_cbv tests: OK" in
+  let () = print_newline () in
+  let () = print_newline () in
   ()
