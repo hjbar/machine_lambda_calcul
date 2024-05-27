@@ -1,0 +1,3 @@
+(executable
+ (name main)
+ (libraries lambda weak_cbn weak_cbnd strong_cbv strong_cbnd))

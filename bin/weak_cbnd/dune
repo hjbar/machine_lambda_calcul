@@ -1,0 +1,3 @@
+(library
+ (name weak_cbnd)
+ (libraries lambda))
