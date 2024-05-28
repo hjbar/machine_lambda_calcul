@@ -1,11 +1,9 @@
 let () =
-  let () = print_newline () in
-  let () = print_newline () in
+  print_newline ();
+  print_newline ();
 
-  let () = Weak_cbn.test () in
-  let () = Weak_cbnd.test () in
-  let () = Strong_cbv.test () in
-  let () = Strong_cbv_min.test () in
-  let () = Strong_cbnd.test () in
-
-  ()
+  Weak_cbn.test ();
+  Weak_cbnd.test ();
+  Strong_cbv.test ();
+  Strong_cbv_min.test ();
+  Strong_cbnd.test ()

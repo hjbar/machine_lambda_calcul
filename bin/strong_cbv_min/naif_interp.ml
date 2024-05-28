@@ -109,7 +109,7 @@ and v : extended_terms -> value = function
 (* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  if true then failwith "TODO";
+  if true then failwith "NAIF TODO";
   let t' = term_to_extended t |> n in
   pp_extended t';
   extended_to_term t'
