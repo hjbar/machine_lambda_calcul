@@ -97,7 +97,7 @@ and r : value -> extended_terms = function
         end
         None l
     in
-    match t_opt with None -> assert false | Some res -> res
+    Option.get t_opt
   end
 
 and v : extended_terms -> value = function
@@ -109,6 +109,7 @@ and v : extended_terms -> value = function
 (* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
+  if true then failwith "TODO";
   let t' = term_to_extended t |> n in
   pp_extended t';
   extended_to_term t'

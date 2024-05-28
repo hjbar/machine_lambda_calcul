@@ -50,7 +50,8 @@ let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
     cache
   | Some cache -> cache
 
-let rec reify : sem -> lambda_term = function
+let rec reify (s : sem) : lambda_term =
+  match s with
   | Sem f ->
     let x = gensym () in
     Abs (x, abstract_variable x |> f |> reify)
@@ -59,11 +60,12 @@ let rec reify : sem -> lambda_term = function
 
 let to_sem (f : sem -> sem) : sem = Sem f
 
-let rec from_sem : sem -> sem -> sem = function
-  | Sem f -> f
-  | Neutral l -> apply_neutral l
-  | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l)
-  | Cache (_, v) -> from_sem v
+let rec from_sem (s1 : sem) (s2 : sem) : sem =
+  match s1 with
+  | Sem f -> f s2
+  | Neutral l -> apply_neutral l s2
+  | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l) s2
+  | Cache (_, v) -> from_sem v s2
 
 and apply_neutral (l : unit -> lambda_term) (v : sem) : sem =
   let f () =
@@ -91,5 +93,5 @@ let rec interp (t : lambda_term) (e : env) : sem =
 (* Functions of interp *)
 
 let eval (t : lambda_term) : lambda_term =
-  interp t Dict.empty |> reify |> ignore;
-  failwith "CPS TODO"
+  if true then failwith "CPS TODO";
+  interp t Dict.empty |> reify
