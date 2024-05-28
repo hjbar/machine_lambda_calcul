@@ -3,23 +3,22 @@ open Lambda
 let test () =
   (* Début test *)
   let strat = "strong_cbnd" in
-  let () = println_flush "Strong_cbnd tests :" in
-  let () = print_newline () in
+  println_flush "Strong_cbnd tests :";
+  print_newline ();
 
   (* Test pour naif_interp *)
   let open Naif_interp in
-  let () = test_strong eval strat "naif" false in
+  test_strong eval strat "naif" true;
 
   (* Test pour cps_interp *)
   let open Cps_interp in
-  let () = test_strong eval strat "cps" true in
+  test_strong eval strat "cps" true;
 
   (* Test pour defunc_interp *)
   let open Defunc_interp in
-  let () = test_strong eval strat "defunc" true in
+  test_strong eval strat "defunc" true;
 
   (* Fin test *)
-  let () = println_flush "Strong_cbnd tests: OK" in
-  let () = print_newline () in
-  let () = print_newline () in
-  ()
+  println_flush "Strong_cbnd tests: OK";
+  print_newline ();
+  print_newline ()

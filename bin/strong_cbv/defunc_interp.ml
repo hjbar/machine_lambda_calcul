@@ -50,46 +50,51 @@ let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
     cache
   | Some cache -> cache
 
-let rec reify : sem -> lambda_term = function
+let rec reify (s : sem) k : lambda_term =
+  match s with
   | Sem f ->
     let x = gensym () in
-    Abs (x, abstract_variable x |> f |> reify)
-  | Neutral l -> l ()
-  | Cache (c, v) -> cached_call c (fun () -> reify v)
+    reify (abstract_variable x |> f) @@ fun t -> k @@ Abs (x, t)
+  | Neutral l -> k @@ l ()
+  | Cache (c, v) -> cached_call c (fun () -> reify v k)
 
 let to_sem (f : sem -> sem) : sem = Sem f
 
-let rec from_sem : sem -> sem -> sem = function
-  | Sem f -> f
-  | Neutral l -> apply_neutral l
-  | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l)
-  | Cache (_, v) -> from_sem v
+let rec from_sem (s1 : sem) (s2 : sem) k : sem =
+  match s1 with
+  | Sem f -> k @@ f s2
+  | Neutral l -> apply_neutral l s2 k
+  | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l) s2 k
+  | Cache (_, v) -> from_sem v s2 k
 
-and apply_neutral (l : unit -> lambda_term) (v : sem) : sem =
+and apply_neutral (l : unit -> lambda_term) (v : sem) k : sem =
   let f () =
-    let v' = reify v in
+    reify v @@ fun v' ->
     let l' = l () in
     App (l', v')
   in
-  Neutral f
+  k @@ Neutral f
 
 let mount_cache (v : sem) : sem =
   match v with Cache _ -> v | _ -> Cache (ref None, v)
 
-let rec interp (t : lambda_term) (e : env) : sem =
+let rec interp (t : lambda_term) (e : env) k : sem =
   match t with
-  | Var x -> env_lookup x e
+  | Var x -> k @@ env_lookup x e
   | Abs (x, t') ->
-    to_sem @@ fun v ->
-    let e' = Dict.add x (mount_cache v) e in
-    interp t' e'
+    let sem =
+      to_sem @@ fun v ->
+      let e' = Dict.add x (mount_cache v) e in
+      interp t' e' Fun.id
+    in
+    k sem
   | App (t1, t2) ->
-    let v2 = interp t2 e in
-    let v1 = interp t1 e in
-    from_sem v1 v2
+    interp t2 e @@ fun v2 ->
+    interp t1 e @@ fun v1 -> from_sem v1 v2 k
 
 (* Functions of interp *)
 
 let eval (t : lambda_term) : lambda_term =
-  interp t Dict.empty |> reify |> ignore;
-  failwith "CPS TODO"
+  if true then failwith "DEFUNC TODO";
+  let t' = interp t Dict.empty Fun.id in
+  reify t' Fun.id
