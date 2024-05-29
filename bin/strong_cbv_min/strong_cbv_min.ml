@@ -9,7 +9,7 @@ let test () =
 
     (* Test pour naif_interp *)
     let open Naif_interp in
-    test_strong eval strat "naif" true;
+    test_strong eval strat "naif" false;
 
     (* Test pour cps_interp *)
     let open Cps_interp in
