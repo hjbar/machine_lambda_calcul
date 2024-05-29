@@ -76,7 +76,11 @@ let gensym : unit -> string =
 
 (* Functions for interp *)
 
-let rec n (b : extended_terms) : extended_terms = r @@ v b
+let rec n (b : extended_terms) : extended_terms =
+  pp_extended b;
+  print_newline ();
+  print_newline ();
+  r @@ v b
 
 and r : value -> extended_terms = function
   | Cst x -> Var x
@@ -102,7 +106,7 @@ and r : value -> extended_terms = function
 
 and v : extended_terms -> value = function
   | Var x -> Cst x
-  | App (t1, t2) -> Lst [ v t1; v t2 ]
+  | App (t1, t2) -> Lst [ v @@ n t1; v @@ n t2 ]
   | Abs (x, t) -> Lam (x, n t)
   | Ext l -> Lst l
 
@@ -110,6 +114,4 @@ and v : extended_terms -> value = function
 
 let eval (t : lambda_term) : lambda_term =
   if true then failwith "NAIF TODO";
-  let t' = term_to_extended t |> n in
-  pp_extended t';
-  extended_to_term t'
+  term_to_extended t |> n |> extended_to_term
