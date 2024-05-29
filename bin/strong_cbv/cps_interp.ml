@@ -50,7 +50,7 @@ let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
     cache
   | Some cache -> cache
 
-let rec reify (s : sem) k : lambda_term =
+let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
   match s with
   | Sem f ->
     let x = gensym () in
@@ -60,14 +60,14 @@ let rec reify (s : sem) k : lambda_term =
 
 let to_sem (f : sem -> sem) : sem = Sem f
 
-let rec from_sem (s1 : sem) (s2 : sem) k : sem =
+let rec from_sem (s1 : sem) (s2 : sem) (k : sem -> sem) : sem =
   match s1 with
   | Sem f -> k @@ f s2
   | Neutral l -> apply_neutral l s2 k
   | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l) s2 k
   | Cache (_, v) -> from_sem v s2 k
 
-and apply_neutral (l : unit -> lambda_term) (v : sem) k : sem =
+and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem -> sem) : sem =
   let f () =
     reify v @@ fun v' ->
     let l' = l () in
@@ -78,7 +78,7 @@ and apply_neutral (l : unit -> lambda_term) (v : sem) k : sem =
 let mount_cache (v : sem) : sem =
   match v with Cache _ -> v | _ -> Cache (ref None, v)
 
-let rec interp (t : lambda_term) (e : env) k : sem =
+let rec interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
   match t with
   | Var x -> k @@ env_lookup x e
   | Abs (x, t') ->
