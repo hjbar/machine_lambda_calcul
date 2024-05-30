@@ -13,7 +13,7 @@ let test () =
 
     (* Test pour cps_interp *)
     let open Cps_interp in
-    test_strong eval strat "cps" true;
+    test_strong eval strat "cps" false;
 
     (* Test pour defunc_interp *)
     let open Defunc_interp in

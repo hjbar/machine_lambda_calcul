@@ -10,47 +10,54 @@ let gensym : unit -> string =
     incr cpt;
     Format.sprintf "x%d" !cpt
 
+let rec map_cps f l k =
+  match l with
+  | [] -> k []
+  | x :: l' ->
+    f x @@ fun y ->
+    map_cps f l' @@ fun l'' -> k @@ (y :: l'')
+
 (* Functions for interp *)
 
-let rec n (b : extended_terms) : extended_terms =
-  print_newline ();
-  print_newline ();
-  pp_lambda_ext b;
-  print_newline ();
-  print_newline ();
-  r @@ v b
+let rec n (b : extended_terms) (k : extended_terms -> extended_terms) :
+  extended_terms =
+  let b' = v b Fun.id in
+  r b' k
 
-and r : value -> extended_terms = function
-  | Cst x -> Var x
+and r (value : value) (k : extended_terms -> extended_terms) : extended_terms =
+  match value with
+  | Cst x -> k @@ Var x
   | Lam (x, b) ->
     let y = gensym () in
     let t = App (Abs (x, b), Ext [ Cst y ]) in
-    Abs (y, n t)
+    n t @@ fun t' -> k @@ Abs (y, t')
   | Lst l -> begin
+    map_cps r l @@ fun l' ->
     let t_opt =
       List.fold_left
         begin
           Fun.flip
             begin
-              fun t -> function
-                | None -> Some (r t)
-                | Some t' -> Some (App (t', r t))
+              fun t -> function None -> Some t | Some t' -> Some (App (t', t))
             end
         end
-        None l
+        None l'
     in
-    Option.get t_opt
+    k @@ Option.get t_opt
   end
 
-and v (t : extended_terms) : value =
+and v (t : extended_terms) (k : value -> value) : value =
   match beta_reduce t with
-  | Var x -> Cst x
-  | App (t1, t2) -> Lst [ v t1; v t2 ]
-  | Abs (x, t) -> Lam (x, t)
-  | Ext l -> Lst l
+  | Var x -> k @@ Cst x
+  | App (t1, t2) ->
+    v t1 @@ fun t1' ->
+    v t2 @@ fun t2' -> k @@ Lst [ t1'; t2' ]
+  | Abs (x, t) -> k @@ Lam (x, t)
+  | Ext l -> k @@ Lst l
 
 (* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  if true then failwith "CPS TODO";
-  t |> term_to_extended |> n |> extended_to_term
+  let t_ext = term_to_extended t in
+  let t_ext' = n t_ext Fun.id in
+  extended_to_term t_ext'
