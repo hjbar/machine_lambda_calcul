@@ -12,13 +12,7 @@ let gensym : unit -> string =
 
 (* Functions for interp *)
 
-let rec n (b : extended_terms) : extended_terms =
-  print_newline ();
-  print_newline ();
-  pp_lambda_ext b;
-  print_newline ();
-  print_newline ();
-  r @@ v b
+let rec n (b : extended_terms) : extended_terms = r @@ v b
 
 and r : value -> extended_terms = function
   | Cst x -> Var x
@@ -42,9 +36,9 @@ and r : value -> extended_terms = function
     Option.get t_opt
   end
 
-and v : extended_terms -> value = function
-  | Var x -> Lst [ Cst x ]
-  | App (Abs (x, t1), t2) -> subst t1 x t2 |> v
+and v (t : extended_terms) : value =
+  match beta_reduce t with
+  | Var x -> Cst x
   | App (t1, t2) -> Lst [ v t1; v t2 ]
   | Abs (x, t) -> Lam (x, t)
   | Ext l -> Lst l

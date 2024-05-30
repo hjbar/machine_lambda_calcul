@@ -12,14 +12,20 @@ let gensym : unit -> string =
 
 (* Functions for interp *)
 
-let rec n (b : extended_terms) : extended_terms = r @@ v b
+let rec n (b : extended_terms) : extended_terms =
+  print_newline ();
+  print_newline ();
+  pp_lambda_ext b;
+  print_newline ();
+  print_newline ();
+  r @@ v b
 
 and r : value -> extended_terms = function
   | Cst x -> Var x
   | Lam (x, b) ->
     let y = gensym () in
-    let t = n @@ App (Abs (x, b), Ext [ Cst y ]) in
-    Abs (y, t)
+    let t = App (Abs (x, b), Ext [ Cst y ]) in
+    Abs (y, n t)
   | Lst l -> begin
     let t_opt =
       List.fold_left
@@ -36,9 +42,9 @@ and r : value -> extended_terms = function
     Option.get t_opt
   end
 
-and v : extended_terms -> value = function
-  | Var x -> Lst [ Cst x ]
-  | App (Abs (x, t1), t2) -> v @@ subst t1 x t2
+and v (t : extended_terms) : value =
+  match beta_reduce t with
+  | Var x -> Cst x
   | App (t1, t2) -> Lst [ v t1; v t2 ]
   | Abs (x, t) -> Lam (x, t)
   | Ext l -> Lst l
@@ -47,4 +53,4 @@ and v : extended_terms -> value = function
 
 let eval (t : lambda_term) : lambda_term =
   if true then failwith "CPS TODO";
-  term_to_extended t |> n |> extended_to_term
+  t |> term_to_extended |> n |> extended_to_term
