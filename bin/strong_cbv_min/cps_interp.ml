@@ -10,13 +10,6 @@ let gensym : unit -> string =
     incr cpt;
     Format.sprintf "x%d" !cpt
 
-let rec map_cps f l k =
-  match l with
-  | [] -> k []
-  | x :: l' ->
-    f x @@ fun y ->
-    map_cps f l' @@ fun l'' -> k @@ (y :: l'')
-
 (* Functions for interp *)
 
 let rec n (b : extended_terms) (k : extended_terms -> extended_terms) :
@@ -32,7 +25,7 @@ and r (value : value) (k : extended_terms -> extended_terms) : extended_terms =
     let t = App (Abs (x, b), Ext [ Cst y ]) in
     n t @@ fun t' -> k @@ Abs (y, t')
   | Lst l -> begin
-    map_cps r l @@ fun l' ->
+    Cps.map r l @@ fun l' ->
     let t_opt =
       List.fold_left
         begin
