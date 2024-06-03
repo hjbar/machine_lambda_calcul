@@ -3,17 +3,17 @@
 open Lambda
 module Env = Map.Make (String)
 
-type expval = Closure of lambda_term * env
+type closure = lambda_term * env
 
 and stoval =
-  | Delayed of lambda_term * env
-  | Computed of expval
+  | Delayed of closure
+  | Computed of closure
 
 and env = stoval ref Env.t
 
 (* Functions of interp *)
 
-let rec interp (t : lambda_term) (e : env) : expval =
+let rec interp (t : lambda_term) (e : env) : closure =
   match t with
   | Var x -> begin
     let var = Env.find x e in
@@ -24,10 +24,10 @@ let rec interp (t : lambda_term) (e : env) : expval =
       v
     | Computed v -> v
   end
-  | Abs _ -> Closure (t, e)
+  | Abs _ -> (t, e)
   | App (t1, t2) -> begin
     match interp t1 e with
-    | Closure (Abs (x, t'), e') ->
+    | Abs (x, t'), e' ->
       let e' = Env.add x (ref @@ Delayed (t2, e)) e' in
       interp t' e'
     | _ -> assert false
@@ -35,6 +35,4 @@ let rec interp (t : lambda_term) (e : env) : expval =
 
 (* Eval functions *)
 
-let eval t =
-  let (Closure (t, _env)) = interp t Env.empty in
-  t
+let eval t = interp t Env.empty |> fst
