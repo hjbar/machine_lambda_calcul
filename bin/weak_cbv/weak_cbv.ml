@@ -1,5 +1,7 @@
 open Lambda
 
+let eval = Defunc_interp.eval
+
 let test () =
   try
     (* Début test *)
