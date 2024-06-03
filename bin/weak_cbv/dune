@@ -1,0 +1,3 @@
+(library
+ (name weak_cbv)
+ (libraries lambda_eval))

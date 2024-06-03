@@ -1,3 +1,9 @@
 (executable
  (name main)
- (libraries weak_cbn weak_cbnd strong_cbv_min strong_cbv strong_cbnd))
+ (libraries
+  weak_cbn
+  weak_cbv
+  weak_cbnd
+  strong_cbv_min
+  strong_cbv
+  strong_cbnd))

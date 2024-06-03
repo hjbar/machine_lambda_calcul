@@ -53,7 +53,6 @@ let rec interp (e : env) (t : lambda_term) : value =
     let i1 = interp e t in
     let i2 = interp e u in
     apply_value i1 i2 |> set_term
-  (* ERROR ICI *)
   | Abs (x, t) ->
     let f (v : value) : lambda_term =
       Hashtbl.replace e x (memothunk (fun () -> v |> get_term));
