@@ -17,7 +17,7 @@ let test () =
 
     (* Test pour defunc_interp *)
     let open Defunc_interp in
-    test_weak eval strat "defunc" true;
+    test_weak eval strat "defunc" false;
 
     (* Fin test *)
     println_flush "Weak_cbv tests: OK";

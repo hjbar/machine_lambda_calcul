@@ -1,10 +1,12 @@
-open Lambda_eval
+open Lambda
 
 (* Define some types *)
 
 module StringMap = Map.Make (String)
 
-type env = Env of (term * env) StringMap.t
+type env = Env of closure StringMap.t
+
+and closure = lambda_term * env
 
 let empty = Env StringMap.empty
 
@@ -19,15 +21,14 @@ let add x elem env =
 
 (* Functions of interp *)
 
-let rec interp (t : term) (e : env) (k : term * env -> term * env) : term * env
-    =
+let rec interp (t : lambda_term) (e : env) (k : closure -> closure) : closure =
   match t with
-  | Value (Var x) -> k @@ find x e
-  | Value (Abs _) -> k (t, e)
-  | Comp (App (t1, t2)) -> begin
+  | Var x -> k @@ find x e
+  | Abs _ -> k (t, e)
+  | App (t1, t2) -> begin
     interp t1 e @@ fun (t1', e') ->
     match t1' with
-    | Value (Abs (x, t')) ->
+    | Abs (x, t') ->
       interp t2 e @@ fun closure ->
       let e' = add x closure e' in
       interp t' e' k
@@ -36,5 +37,4 @@ let rec interp (t : term) (e : env) (k : term * env -> term * env) : term * env
 
 (* Functions of eval *)
 
-let eval (t : lambda_term) : lambda_term =
-  interp (term_to_eval t) empty Fun.id |> fst |> eval_to_term
+let eval (t : lambda_term) : lambda_term = interp t empty Fun.id |> fst
