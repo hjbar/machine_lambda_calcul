@@ -35,7 +35,7 @@ and apply (t : lambda_term) (e : env) (k : closure list) : closure =
   | (t2, e2) :: k' -> begin
     match t with
     | Abs (x, t') ->
-      let closure = interp t2 e2 k' in
+      let closure = interp t2 e2 [] in
       let e' = add x closure e in
       interp t' e' k'
     | _ -> assert false
