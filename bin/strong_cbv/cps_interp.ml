@@ -37,6 +37,8 @@ let free_var : unit -> string =
 
 let abstract_variable (x : identifier) : sem = Neutral (fun () -> Var x)
 
+let to_sem (f : sem -> sem) : sem = Sem f
+
 let env_lookup (x : identifier) (e : env) : sem =
   match Dict.find_opt x e with
   | None -> abstract_variable @@ free_var ()
@@ -50,6 +52,9 @@ let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
     cache
   | Some cache -> cache
 
+let mount_cache (v : sem) : sem =
+  match v with Cache _ -> v | _ -> Cache (ref None, v)
+
 let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
   match s with
   | Sem f ->
@@ -57,8 +62,6 @@ let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
     reify (abstract_variable x |> f) @@ fun t -> k @@ Abs (x, t)
   | Neutral l -> k @@ l ()
   | Cache (c, v) -> cached_call c (fun () -> reify v k)
-
-let to_sem (f : sem -> sem) : sem = Sem f
 
 let rec from_sem (s1 : sem) (s2 : sem) (k : sem -> sem) : sem =
   match s1 with
@@ -74,9 +77,6 @@ and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem -> sem) : sem =
     App (l', v')
   in
   k @@ Neutral f
-
-let mount_cache (v : sem) : sem =
-  match v with Cache _ -> v | _ -> Cache (ref None, v)
 
 let rec interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
   match t with
