@@ -20,15 +20,11 @@ let test () =
     test_strong eval strat "defunc" true;
 
     (* Fin test *)
-    println_flush "Strong_cbnd tests: OK";
-    print_newline ();
-    print_newline ()
+    println_flush "Strong_cbnd tests: OK"
   with err ->
     begin
       println_flush @@ Printexc.to_string err;
       print_newline ();
 
-      println_flush "Strong_cbnd tests: ERROR";
-      print_newline ();
-      print_newline ()
+      println_flush "Strong_cbnd tests: ERROR"
     end

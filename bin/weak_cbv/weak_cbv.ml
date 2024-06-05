@@ -22,15 +22,11 @@ let test () =
     test_weak eval strat "defunc" false;
 
     (* Fin test *)
-    println_flush "Weak_cbv tests: OK";
-    print_newline ();
-    print_newline ()
+    println_flush "Weak_cbv tests: OK"
   with err ->
     begin
       println_flush @@ Printexc.to_string err;
       print_newline ();
 
-      println_flush "Weak_cbv tests: ERROR";
-      print_newline ();
-      print_newline ()
+      println_flush "Weak_cbv tests: ERROR"
     end

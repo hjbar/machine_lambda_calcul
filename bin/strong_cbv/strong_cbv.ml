@@ -13,22 +13,18 @@ let test () =
 
     (* Test pour cps_interp *)
     let open Cps_interp in
-    test_strong eval strat "cps_v1" false;
+    test_strong eval strat "cps" false;
 
     (* Test pour defunc_interp *)
     let open Defunc_interp in
-    test_strong eval strat "defunc_v1" true;
+    test_strong eval strat "defunc" true;
 
     (* Fin test *)
-    println_flush "Strong_cbv tests: OK";
-    print_newline ();
-    print_newline ()
+    println_flush "Strong_cbv tests: OK"
   with err ->
     begin
       println_flush @@ Printexc.to_string err;
       print_newline ();
 
-      println_flush "Strong_cbv tests: ERROR";
-      print_newline ();
-      print_newline ()
+      println_flush "Strong_cbv tests: ERROR"
     end

@@ -63,7 +63,7 @@ let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
   | Neutral l -> k @@ l ()
   | Cache (c, v) -> cached_call c (fun () -> reify v k)
 
-and from_sem (s1 : sem) (s2 : sem) (k : sem -> sem) : sem =
+let rec from_sem (s1 : sem) (s2 : sem) (k : sem -> sem) : sem =
   match s1 with
   | Sem f -> k @@ f s2
   | Neutral l -> apply_neutral l s2 k
@@ -78,7 +78,7 @@ and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem -> sem) : sem =
   in
   k @@ Neutral f
 
-and interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
+let rec interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
   match t with
   | Var x -> k @@ env_lookup x e
   | Abs (x, t') ->
@@ -95,6 +95,6 @@ and interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
 (* Functions of interp *)
 
 let eval (t : lambda_term) : lambda_term =
-  if true then failwith "DEFUNC TODO";
+  ignore @@ failwith "DEFUNC TODO";
   let t' = interp t Dict.empty Fun.id in
   reify t' Fun.id

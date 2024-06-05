@@ -26,15 +26,11 @@ let test () =
     test_strong eval strat "defunc_v2" true;
 
     (* Fin test *)
-    println_flush "Strong_cbv_min tests: OK";
-    print_newline ();
-    print_newline ()
+    println_flush "Strong_cbv_min tests: OK"
   with err ->
     begin
       println_flush @@ Printexc.to_string err;
       print_newline ();
 
-      println_flush "Strong_cbv_min tests: ERROR";
-      print_newline ();
-      print_newline ()
+      println_flush "Strong_cbv_min tests: ERROR"
     end

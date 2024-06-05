@@ -2,6 +2,8 @@
 
 open Lambda_ext
 
+(*
+
 (* Definitions of types for weak cbv *)
 
 module StringMap = Map.Make (String)
@@ -12,18 +14,16 @@ and closure = extended_terms * env
 
 let empty = Env StringMap.empty
 
-let _find x env =
+let find x env =
   let (Env env) = env in
   StringMap.find x env
-
-let find_opt x env =
-  let (Env env) = env in
-  StringMap.find_opt x env
 
 let add x elem env =
   let (Env env) = env in
   let env' = StringMap.add x elem env in
   Env env'
+
+*)
 
 (* Functions for variable names *)
 
@@ -60,22 +60,24 @@ and r : value -> extended_terms = function
   end
 
 and v (t : extended_terms) : value =
-  match weak_eval t with
+  match beta_reduce t with
   | Var x -> Cst x
   | App (t1, t2) -> Lst [ v t1; v t2 ]
   | Abs (x, t) -> Lam (x, t)
   | Ext l -> Lst l
 
+(*
+
 (* Functions of weak cbv eval *)
 
 and interp (t : extended_terms) (e : env) (k : closure list) : closure =
   match t with
-  | Var x -> begin
-    match find_opt x e with None -> (t, e) | Some (t', e') -> apply t' e' k
-  end
+  | Var x ->
+    let t', e' = find x e in
+    apply t' e' k
   | Abs _ -> apply t e k
-  | App (t1, t2) -> interp t1 e ((t2, e) :: k)
-  | Ext _ -> (t, e)
+  | App (t1, t2) -> interp t2 e ((t1, e) :: k)
+  | Ext _ -> apply t e k
 
 and apply (t : extended_terms) (e : env) (k : closure list) : closure =
   match k with
@@ -86,15 +88,43 @@ and apply (t : extended_terms) (e : env) (k : closure list) : closure =
       let closure = interp t2 e2 [] in
       let e' = add x closure e in
       interp t' e' k'
-    | Ext l -> begin
-      let term, env = interp t2 e2 [] in
-      let ext = Ext (l @ [ v term ]) in
-      apply ext env k'
-    end
+    | Ext l ->
+      let t' = v @@ fst @@ interp t2 e2 [] in
+      let ext' = Ext (l @ [ t' ]) in
+      apply ext' e k'
     | _ -> assert false
   end
 
 and weak_eval (t : extended_terms) : extended_terms = interp t empty [] |> fst
+
+*)
+
+(*
+
+(* Functions of interp *)
+
+and interp (t : extended_terms) (e : env) : closure =
+  match t with
+  | Var x -> find x e
+  | Abs _ -> (t, e)
+  | App (t1, t2) -> begin
+    match interp t2 e with
+    | Abs (x, t'), e' ->
+      let closure = interp t1 e in
+      let e' = add x closure e' in
+      interp t' e'
+    | Ext l, e' ->
+      let t', _e' = interp t1 e in
+      (Ext (l @ [ v t' ]), e')
+    | _ -> assert false
+  end
+  | Ext _ -> (t, e)
+
+(* Functions of eval *)
+
+and weak_eval (t : extended_terms) : extended_terms = interp t empty |> fst
+
+*)
 
 (* The function of strong cbv eval *)
 

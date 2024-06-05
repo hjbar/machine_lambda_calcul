@@ -12,46 +12,47 @@ let gensym : unit -> string =
 
 (* Functions for interp *)
 
-let rec n (b : extended_terms) (k : extended_terms -> extended_terms) :
-  extended_terms =
-  let b' = v b Fun.id in
-  r b' k
+let rec n (b : extended_terms) (k : extended_terms list) : extended_terms =
+  v b [] |> Fun.flip r k
 
-and r (value : value) (k : extended_terms -> extended_terms) : extended_terms =
+and r (value : value) (k : extended_terms list) : extended_terms =
   match value with
-  | Cst x -> k @@ Var x
+  | Cst x -> apply_ext (Var x) k
   | Lam (x, b) ->
     let y = gensym () in
     let t = App (Abs (x, b), Ext [ Cst y ]) in
-    n t @@ fun t' -> k @@ Abs (y, t')
+    apply_ext t k
   | Lst l -> begin
-    Cps.map r l @@ fun l' ->
     let t_opt =
       List.fold_left
         begin
           Fun.flip
             begin
-              fun t -> function None -> Some t | Some t' -> Some (App (t', t))
+              fun t -> function
+                | None -> Some (r t k)
+                | Some acc -> Some (App (r t k, acc))
             end
         end
-        None l'
+        None l
     in
-    k @@ Option.get t_opt
+    apply_ext (Option.get t_opt) k
   end
 
-and v (t : extended_terms) (k : value -> value) : value =
+and v (t : extended_terms) (k : value list) : value =
   match beta_reduce t with
-  | Var x -> k @@ Cst x
   | App (t1, t2) ->
-    v t1 @@ fun t1' ->
-    v t2 @@ fun t2' -> k @@ Lst [ t1'; t2' ]
-  | Abs (x, t) -> k @@ Lam (x, t)
-  | Ext l -> k @@ Lst l
+    let v1 = apply_val t1 k in
+    let v2 = apply_val t2 k in
+    Lst [ v1; v2 ]
+  | res -> apply_val res k
+
+and apply_ext (_b : extended_terms) (_k : extended_terms list) : extended_terms
+    =
+  failwith "TODO"
+
+and apply_val (_t : extended_terms) (_k : value list) : value = failwith "TODO"
 
 (* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  ignore @@ failwith "DEFUNC TODO";
-  let t_ext = term_to_extended t in
-  let t_ext' = n t_ext Fun.id in
-  extended_to_term t_ext'
+  t |> term_to_extended |> Fun.flip n [] |> extended_to_term
