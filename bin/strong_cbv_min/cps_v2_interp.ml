@@ -12,8 +12,7 @@ let gensym : unit -> string =
 
 let rec n (b : extended_terms) (e : env)
   (k : extended_closure -> extended_closure) : extended_closure =
-  let b', e' = v b e Fun.id in
-  r b' e' k
+  v b e @@ fun (b', e') -> r b' e' k
 
 and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
   extended_closure =
@@ -35,9 +34,9 @@ and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
     in
     k (Option.get t_opt, e)
 
-and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
-  value_closure =
-  let t', e' = weak_eval t e in
+and v (t : extended_terms) (e : env) (k : value_closure -> extended_closure) :
+  extended_closure =
+  weak_eval t e @@ fun (t', e') ->
   match t' with
   | Var x -> k (Cst x, e')
   | App (t1, t2) ->
@@ -48,46 +47,41 @@ and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
 
 (* Evaluator for weak normal form *)
 
-and interp (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and interp (t : extended_terms) (e : env) (k : extended_closure list)
+  (cont : extended_closure -> extended_closure) : extended_closure =
   match t with
   | Var x ->
     let t', e' = find x e in
-    apply t' e' k
-  | Abs _ -> apply t e k
-  | App (t1, t2) -> interp t1 e ((t2, e) :: k)
-  | Ext _ -> apply t e k
+    apply t' e' k cont
+  | Abs _ -> apply t e k cont
+  | App (t1, t2) -> interp t1 e ((t2, e) :: k) cont
+  | Ext _ -> apply t e k cont
 
-and apply (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and apply (t : extended_terms) (e : env) (k : extended_closure list)
+  (cont : extended_closure -> extended_closure) : extended_closure =
   match k with
-  | [] -> (t, e)
+  | [] -> cont (t, e)
   | (t2, e2) :: k' -> begin
     match t with
     | Abs (x, t') ->
-      let closure = interp t2 e2 [] in
+      interp t2 e2 [] @@ fun closure ->
       let e' = add x closure e in
-      interp t' e' k'
+      interp t' e' k' cont
     | Ext l ->
-      let l' =
-        List.map
-          begin
-            fun (t, e) ->
-              let t', e' = interp t e [] in
-              v t' e' Fun.id |> fst
-          end
-          k
-      in
+      Cps.map (fun (t, e) -> interp t e []) k @@ fun ext_closure_args ->
+      Cps.map (fun (t, e) -> v t e) ext_closure_args @@ fun val_closure_args ->
+      let l' = List.map fst val_closure_args in
       let ext' = Ext (l @ l') in
-      (ext', e)
+      cont (ext', e)
     | _ -> assert false
   end
 
-and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
+and weak_eval (t : extended_terms) (e : env)
+  (cont : extended_closure -> extended_closure) : extended_closure =
+  interp t e [] cont
 
 (* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  ignore @@ failwith "CPS V2 TODO";
   let t' = n (term_to_extended t) empty Fun.id |> fst in
   extended_to_term t'

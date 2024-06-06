@@ -1,5 +1,3 @@
-(* Definitions of types *)
-
 open Lambda_ext
 
 (* Functions for variable names *)
@@ -10,49 +8,86 @@ let gensym : unit -> string =
     incr cpt;
     Format.sprintf "x%d" !cpt
 
-(* Functions for interp *)
+(* Strong Call By Value Evaluator *)
 
-let rec n (b : extended_terms) (k : extended_terms list) : extended_terms =
-  v b [] |> Fun.flip r k
+let rec n (b : extended_terms) (e : env)
+  (k : extended_closure -> extended_closure) : extended_closure =
+  let b', e' = v b e Fun.id in
+  r b' e' k
 
-and r (value : value) (k : extended_terms list) : extended_terms =
-  match value with
-  | Cst x -> apply_ext (Var x) k
+and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
+  extended_closure =
+  match v with
+  | Cst x -> k (Var x, e)
   | Lam (x, b) ->
     let y = gensym () in
     let t = App (Abs (x, b), Ext [ Cst y ]) in
-    apply_ext t k
-  | Lst l -> begin
+    n t e @@ fun (t', e') -> k (Abs (y, t'), e')
+  | Lst l ->
+    Cps.map (fun v -> r v e) l @@ fun l' ->
     let t_opt =
       List.fold_left
         begin
-          Fun.flip
-            begin
-              fun t -> function
-                | None -> Some (r t k)
-                | Some acc -> Some (App (r t k, acc))
-            end
+          fun acc (t, _e) ->
+            match acc with None -> Some t | Some acc' -> Some (App (acc', t))
         end
-        None l
+        None l'
     in
-    apply_ext (Option.get t_opt) k
+    k (Option.get t_opt, e)
+
+and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
+  value_closure =
+  let t', e' = weak_eval t e in
+  match t' with
+  | Var x -> k (Cst x, e')
+  | App (t1, t2) ->
+    v t1 e' @@ fun (t1', _) ->
+    v t2 e' @@ fun (t2', _) -> k @@ (Lst [ t1'; t2' ], e')
+  | Abs (x, t) -> k (Lam (x, t), e')
+  | Ext l -> k (Lst l, e')
+
+(* Evaluator for weak normal form *)
+
+and interp (t : extended_terms) (e : env) (k : extended_closure list) :
+  extended_closure =
+  match t with
+  | Var x ->
+    let t', e' = find x e in
+    apply t' e' k
+  | Abs _ -> apply t e k
+  | App (t1, t2) -> interp t1 e ((t2, e) :: k)
+  | Ext _ -> apply t e k
+
+and apply (t : extended_terms) (e : env) (k : extended_closure list) :
+  extended_closure =
+  match k with
+  | [] -> (t, e)
+  | (t2, e2) :: k' -> begin
+    match t with
+    | Abs (x, t') ->
+      let closure = interp t2 e2 [] in
+      let e' = add x closure e in
+      interp t' e' k'
+    | Ext l ->
+      let l' =
+        List.map
+          begin
+            fun (t, e) ->
+              let t', e' = interp t e [] in
+              v t' e' Fun.id |> fst
+          end
+          k
+      in
+      let ext' = Ext (l @ l') in
+      (ext', e)
+    | _ -> assert false
   end
 
-and v (t : extended_terms) (k : value list) : value =
-  match beta_reduce t with
-  | App (t1, t2) ->
-    let v1 = apply_val t1 k in
-    let v2 = apply_val t2 k in
-    Lst [ v1; v2 ]
-  | res -> apply_val res k
+and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
 
-and apply_ext (_b : extended_terms) (_k : extended_terms list) : extended_terms
-    =
-  failwith "TODO"
-
-and apply_val (_t : extended_terms) (_k : value list) : value = failwith "TODO"
-
-(* Functions of eval *)
+(* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  t |> term_to_extended |> Fun.flip n [] |> extended_to_term
+  ignore @@ failwith "DEFUNC V1 TODO";
+  let t' = n (term_to_extended t) empty Fun.id |> fst in
+  extended_to_term t'
