@@ -1,29 +1,4 @@
-(* Definitions of types for strong cbv *)
-
 open Lambda_ext
-
-(*
-
-(* Definitions of types for weak cbv *)
-
-module StringMap = Map.Make (String)
-
-type env = Env of closure StringMap.t
-
-and closure = extended_terms * env
-
-let empty = Env StringMap.empty
-
-let find x env =
-  let (Env env) = env in
-  StringMap.find x env
-
-let add x elem env =
-  let (Env env) = env in
-  let env' = StringMap.add x elem env in
-  Env env'
-
-*)
 
 (* Functions for variable names *)
 
@@ -33,53 +8,57 @@ let gensym : unit -> string =
     incr cpt;
     Format.sprintf "x%d" !cpt
 
-(* Functions of strong cbv eval *)
+(* Strong Call By Value Evaluator *)
 
-let rec n (b : extended_terms) : extended_terms = r @@ v b
+let rec n (b : extended_terms) (e : env) : extended_closure =
+  let b', e' = v b e in
+  r b' e'
 
-and r : value -> extended_terms = function
-  | Cst x -> Var x
+and r (v : value) (e : env) : extended_closure =
+  match v with
+  | Cst x -> (Var x, e)
   | Lam (x, b) ->
     let y = gensym () in
     let t = App (Abs (x, b), Ext [ Cst y ]) in
-    Abs (y, n t)
-  | Lst l -> begin
+    let t', e' = n t e in
+    (Abs (y, t'), e')
+  | Lst l ->
     let t_opt =
       List.fold_left
         begin
-          Fun.flip
-            begin
-              fun t -> function
-                | None -> Some (r t)
-                | Some t' -> Some (App (t', r t))
-            end
+          fun acc t ->
+            let t' = r t e |> fst in
+            match acc with None -> Some t' | Some acc' -> Some (App (acc', t'))
         end
         None l
     in
-    Option.get t_opt
-  end
+    (Option.get t_opt, e)
 
-and v (t : extended_terms) : value =
-  match beta_reduce t with
-  | Var x -> Cst x
-  | App (t1, t2) -> Lst [ v t1; v t2 ]
-  | Abs (x, t) -> Lam (x, t)
-  | Ext l -> Lst l
+(* Evaluator for normal form *)
 
-(*
+and v (t : extended_terms) (e : env) : value_closure =
+  let t', e' = weak_eval t e in
+  let v' =
+    match t' with
+    | Var x -> Cst x
+    | App (t1, t2) -> Lst [ v t1 e' |> fst; v t2 e' |> fst ]
+    | Abs (x, t) -> Lam (x, t)
+    | Ext l -> Lst l
+  in
+  (v', e')
 
-(* Functions of weak cbv eval *)
-
-and interp (t : extended_terms) (e : env) (k : closure list) : closure =
+and interp (t : extended_terms) (e : env) (k : extended_closure list) :
+  extended_closure =
   match t with
   | Var x ->
     let t', e' = find x e in
     apply t' e' k
   | Abs _ -> apply t e k
-  | App (t1, t2) -> interp t2 e ((t1, e) :: k)
+  | App (t1, t2) -> interp t1 e ((t2, e) :: k)
   | Ext _ -> apply t e k
 
-and apply (t : extended_terms) (e : env) (k : closure list) : closure =
+and apply (t : extended_terms) (e : env) (k : extended_closure list) :
+  extended_closure =
   match k with
   | [] -> (t, e)
   | (t2, e2) :: k' -> begin
@@ -89,44 +68,24 @@ and apply (t : extended_terms) (e : env) (k : closure list) : closure =
       let e' = add x closure e in
       interp t' e' k'
     | Ext l ->
-      let t' = v @@ fst @@ interp t2 e2 [] in
-      let ext' = Ext (l @ [ t' ]) in
-      apply ext' e k'
+      let l' =
+        List.map
+          begin
+            fun (t, e) ->
+              let t', e' = interp t e [] in
+              v t' e' |> fst
+          end
+          k
+      in
+      let ext' = Ext (l @ l') in
+      (ext', e)
     | _ -> assert false
   end
 
-and weak_eval (t : extended_terms) : extended_terms = interp t empty [] |> fst
-
-*)
-
-(*
-
-(* Functions of interp *)
-
-and interp (t : extended_terms) (e : env) : closure =
-  match t with
-  | Var x -> find x e
-  | Abs _ -> (t, e)
-  | App (t1, t2) -> begin
-    match interp t2 e with
-    | Abs (x, t'), e' ->
-      let closure = interp t1 e in
-      let e' = add x closure e' in
-      interp t' e'
-    | Ext l, e' ->
-      let t', _e' = interp t1 e in
-      (Ext (l @ [ v t' ]), e')
-    | _ -> assert false
-  end
-  | Ext _ -> (t, e)
-
-(* Functions of eval *)
-
-and weak_eval (t : extended_terms) : extended_terms = interp t empty |> fst
-
-*)
+and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
 
 (* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  t |> term_to_extended |> n |> extended_to_term
+  let t' = n (term_to_extended t) empty |> fst in
+  extended_to_term t'
