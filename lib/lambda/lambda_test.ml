@@ -2,10 +2,14 @@ open Lambda_def
 open Lambda_print
 open Lambda_utils
 
+(* Testing with result *)
+
 let test_eval t res f msg =
   let t' = f t in
   pp_result t t';
   if not @@ alpha_equiv t' res then failwith msg
+
+(* Testing for weak evaluator *)
 
 let test_weak_bis f s1 s2 with_omega pp =
   let s_maj = String.capitalize_ascii s2 in
@@ -35,6 +39,8 @@ let test_weak_bis f s1 s2 with_omega pp =
   end
 
 let test_weak f s1 s2 with_omega = test_weak_bis f s1 s2 with_omega true
+
+(* Testing for strong evaluator *)
 
 let test_strong f s1 s2 with_omega =
   test_weak_bis f s1 s2 with_omega false;
