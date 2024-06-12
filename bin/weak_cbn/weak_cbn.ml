@@ -38,9 +38,13 @@ let test () =
       println_flush "Weak_cbn Random tests :";
       print_newline ();
 
-      test_random_naif Naif_interp.eval Cps_interp.eval "naif" "cps";
-      test_random_naif Naif_interp.eval Defunc_interp.eval "naif" "defunc";
-      test_random_naif Cps_interp.eval Defunc_interp.eval "cps" "defunc";
+      test_random_weak_with_reference Naif_interp.eval "naif";
+      test_random_weak_with_reference Cps_interp.eval "cps";
+      test_random_weak_with_reference Defunc_interp.eval "defunc";
+
+      test_random_weak Naif_interp.eval Cps_interp.eval "naif" "cps";
+      test_random_weak Naif_interp.eval Defunc_interp.eval "naif" "defunc";
+      test_random_weak Cps_interp.eval Defunc_interp.eval "cps" "defunc";
 
       println_flush "Weak_cbn Random tests : OK";
       print_newline ()

@@ -2,7 +2,19 @@ open Lambda_def
 open Lambda_print
 open Lambda_utils
 
-(* Generator of lambda_term  *)
+(* Constants *)
+
+let () = Random.self_init ()
+
+let max_recursion = 100
+
+(* Reference Evaluator *)
+
+let beta_reduce_weak = beta_reduce_weak ~max_recur:max_recursion
+
+let beta_reduce_strong = beta_reduce_strong ~max_recur:max_recursion
+
+(* Generator of weak lambda_term  *)
 
 let random_choose l =
   match l with
@@ -11,13 +23,13 @@ let random_choose l =
   | x :: l' ->
     List.fold_left (fun acc x -> if Random.int 100 < 50 then x else acc) x l'
 
-let gensym =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "x%d" !cpt
-
-let rec create_term_naif (n : int) : lambda_term =
+let rec create_term_weak (n : int) : lambda_term =
+  let gensym =
+    let cpt = ref ~-1 in
+    fun () ->
+      incr cpt;
+      Format.sprintf "x%d" !cpt
+  in
   let rec loop n vars =
     match n with
     | 0 -> Var (random_choose vars)
@@ -26,8 +38,9 @@ let rec create_term_naif (n : int) : lambda_term =
       Abs (x, loop (n - 1) (x :: vars))
     | n -> App (loop (n / 2) vars, loop (n / 2) vars)
   in
+  try loop n [] with _ -> create_term_weak n
 
-  try loop n [] with _ -> create_term_naif n
+(* Generator of strong lambda_term  *)
 
 let p n m =
   let c1 = n + m in
@@ -38,46 +51,58 @@ let solve k =
   let rec loop n m =
     let calc = p n m in
     if calc < k then loop n (m + 1)
-    else if m = 0 && calc > k then failwith "Any solution"
+    else if m = 0 && calc > k then failwith "Any solution to find n & m"
     else if calc > k then loop (n + 1) 0
     else (n, m)
   in
   loop 0 0
 
-let var_name n = Format.sprintf "x%d" n
-
-let rec create_term (i : int) : lambda_term =
-  match i mod 2 = 0 with
-  | false ->
-    let j = i / 2 in
-    Var (var_name j)
-  | true ->
-    let j = (i - 1) / 2 in
-    if j mod 2 = 0 then
-      let k = j / 2 in
-      let n, m = solve k in
-      App (create_term n, create_term m)
-    else
-      let k = (j - 1) / 2 in
-      let n, m = solve k in
-      Abs (var_name n, create_term m)
+let rec create_term_strong (i : int) : lambda_term =
+  let gensym n = Format.sprintf "x%d" n in
+  let rec loop i =
+    match i mod 2 = 0 with
+    | false ->
+      let j = i / 2 in
+      Var (gensym j)
+    | true ->
+      let j = (i - 1) / 2 in
+      if j mod 2 = 0 then
+        let k = j / 2 in
+        let n, m = solve k in
+        App (loop n, loop m)
+      else
+        let k = (j - 1) / 2 in
+        let n, m = solve k in
+        Abs (gensym n, loop m)
+  in
+  try loop i with _ -> create_term_strong i
 
 (* Random testing *)
 
-let test_random_body (reference_interp : lambda_term -> lambda_term)
-  (fun_interp : lambda_term -> lambda_term) (reference_name : string)
-  (fun_name : string) ~(gen_fun : int -> lambda_term) ~(version : string)
-  ~(rep : int) ~(prof : int) : unit =
+let test_random_body reference_interp fun_interp reference_name fun_name
+  ~gen_fun ~version ~rep ~prof =
+  let rec gen_term_and_solve interp gen prof =
+    let term = gen @@ max 3 (Random.int prof) in
+    try (term, interp term) with _ -> gen_term_and_solve interp gen prof
+  in
+
   let rec loop n =
     match n with
     | 0 -> ()
     | n ->
-      let term = gen_fun @@ max 3 (Random.int prof) in
-
-      let reference = reference_interp term in
+      let term, reference = gen_term_and_solve reference_interp gen_fun prof in
       let result = fun_interp term in
-
-      if not @@ alpha_equiv reference result then failwith "ERROR";
+      if not @@ alpha_equiv reference result then begin
+        print_newline ();
+        pp_lambda term;
+        print_flush " -> ";
+        print_newline ();
+        pp_lambda reference;
+        print_newline ();
+        pp_lambda result;
+        print_newline ();
+        failwith "ERROR"
+      end;
       loop (n - 1)
   in
 
@@ -88,30 +113,41 @@ let test_random_body (reference_interp : lambda_term -> lambda_term)
     Format.sprintf "Random (%s) testing between %s & %s : " version
       reference_name fun_name
   in
-  print_flush msg;
 
-  Random.self_init ();
+  print_flush msg;
   loop rep;
   println_flush "OK";
   print_newline ()
 
 let random_testing f eval1 eval2 s1 s2 l =
-  List.iter
-    begin
-      fun (rep, prof) -> f rep prof eval1 eval2 s1 s2
-    end
-    l
+  List.iter (fun (rep, prof) -> f rep prof eval1 eval2 s1 s2) l
 
-let random_naif rep prof =
-  test_random_body ~gen_fun:create_term_naif ~version:"naif" ~rep ~prof
+let test_list =
+  let rec loop rep prof acc =
+    match rep with
+    | 1 -> List.rev @@ ((rep, prof) :: acc)
+    | _ -> loop (rep / 10) (prof + 5) ((rep, prof) :: acc)
+  in
+  loop max_recursion 5 []
 
-let random_avance rep prof =
-  test_random_body ~gen_fun:create_term ~version:"avancé" ~rep ~prof
+(* Functions for testing weak evaluator *)
 
-let test_random_naif f1 f2 s1 s2 =
-  random_testing random_naif f1 f2 s1 s2
-    [ (10000, 5); (1000, 10); (100, 15); (10, 20); (5, 25) ]
+let random_weak rep prof =
+  test_random_body ~gen_fun:create_term_weak ~version:"weak" ~rep ~prof
 
-let test_random f1 f2 s1 s2 =
-  random_testing random_avance f1 f2 s1 s2
-    [ (10000, 5); (1000, 10); (100, 15); (10, 20); (5, 25) ]
+let test_random_weak_with_reference f s =
+  random_testing random_weak beta_reduce_weak f "beta reduction" s test_list
+
+let test_random_weak f1 f2 s1 s2 =
+  random_testing random_weak f1 f2 s1 s2 test_list
+
+(* Functions for testing strong evaluator *)
+
+let random_strong rep prof =
+  test_random_body ~gen_fun:create_term_strong ~version:"strong" ~rep ~prof
+
+let test_random_strong_with_reference f s =
+  random_testing random_strong beta_reduce_strong f "beta reduction" s test_list
+
+let test_random_strong f1 f2 s1 s2 =
+  random_testing random_strong f1 f2 s1 s2 test_list

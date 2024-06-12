@@ -38,12 +38,14 @@ let test () =
       println_flush "Strong_cbnd Random tests :";
       print_newline ();
 
-      (* Test cps & defunc avec de l'aléatoire *)
-      test_random Naif_interp.eval Cps_interp.eval "naif" "cps";
-      test_random Naif_interp.eval Defunc_interp.eval "naif" "defunc";
-      test_random Cps_interp.eval Defunc_interp.eval "cps" "defunc";
+      test_random_strong_with_reference Naif_interp.eval "naif";
+      test_random_strong_with_reference Cps_interp.eval "cps";
+      test_random_strong_with_reference Defunc_interp.eval "defunc";
 
-      (* Fin test *)
+      test_random_strong Naif_interp.eval Cps_interp.eval "naif" "cps";
+      test_random_strong Naif_interp.eval Defunc_interp.eval "naif" "defunc";
+      test_random_strong Cps_interp.eval Defunc_interp.eval "cps" "defunc";
+
       println_flush "Strong_cbnd Random tests : OK";
       print_newline ()
     with err ->
