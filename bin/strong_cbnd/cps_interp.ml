@@ -69,5 +69,5 @@ let rec interp (e : env) (t : lambda_term) : value =
 (* The functions of eval *)
 
 let eval t =
-  interp (Hashtbl.create 16) t |> reify |> ignore;
-  failwith "TODO"
+  ignore @@ failwith "CPS TODO";
+  interp (Hashtbl.create 16) t |> reify

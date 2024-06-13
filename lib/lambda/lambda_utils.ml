@@ -83,8 +83,11 @@ let beta_reduce_general ?(max_recur = max_int) ~full (t : lambda_term) :
       | Abs (s, t1''), t2'' -> loop (subst t1'' s t2'') (step - 1) k
       | _ -> k @@ App (t1', t2')
     end
-    | Abs (s, t1) ->
-      if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (s, t1') else k t
+    | Abs (x, t1) -> begin
+      match full with
+      | false -> k t
+      | true -> loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1')
+    end
   in
 
   loop (scope_analysis t) max_recur Fun.id

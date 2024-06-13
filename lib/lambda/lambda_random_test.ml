@@ -49,9 +49,10 @@ let p n m =
 
 let solve k =
   let rec loop n m =
+    if n > k && m = 0 then failwith "Any solution to find n & m";
+
     let calc = p n m in
     if calc < k then loop n (m + 1)
-    else if m = 0 && calc > k then failwith "Any solution to find n & m"
     else if calc > k then loop (n + 1) 0
     else (n, m)
   in
@@ -60,20 +61,22 @@ let solve k =
 let rec create_term_strong (i : int) : lambda_term =
   let gensym n = Format.sprintf "x%d" n in
   let rec loop i =
-    match i mod 2 = 0 with
+    match i mod 2 = 0 && i <> 0 with
     | false ->
       let j = i / 2 in
       Var (gensym j)
-    | true ->
+    | true -> begin
       let j = (i - 1) / 2 in
-      if j mod 2 = 0 then
+      match j mod 2 = 0 with
+      | true ->
         let k = j / 2 in
         let n, m = solve k in
         App (loop n, loop m)
-      else
+      | false ->
         let k = (j - 1) / 2 in
         let n, m = solve k in
         Abs (gensym n, loop m)
+    end
   in
   try loop i with _ -> create_term_strong i
 
