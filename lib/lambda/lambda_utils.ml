@@ -31,7 +31,7 @@ let alpha_equiv e1 e2 =
 
   loop e1 e2 Env.empty Env.empty Fun.id
 
-(* Beta reduction *)
+(* Beta reduction utils *)
 
 let scope_analysis t =
   let module Env = Map.Make (String) in
@@ -69,8 +69,9 @@ let subst t1 s t2 =
   in
   loop t1 Env.empty Fun.id
 
-let beta_reduce_general ?(max_recur = max_int) ~full (t : lambda_term) :
-  lambda_term =
+(* Beta reduction cbn *)
+
+let beta_reduce_cbn ?(max_recur = max_int) ~full t =
   let rec loop t step k =
     if step < 0 then failwith "max step";
 
@@ -78,20 +79,65 @@ let beta_reduce_general ?(max_recur = max_int) ~full (t : lambda_term) :
     | Var _ -> k t
     | App (t1, t2) -> begin
       loop t1 (step - 1) @@ fun t1' ->
-      loop t2 (step - 1) @@ fun t2' ->
-      match (t1', t2') with
-      | Abs (s, t1''), t2'' -> loop (subst t1'' s t2'') (step - 1) k
-      | _ -> k @@ App (t1', t2')
+      match t1' with
+      | Abs (s, t1'') -> loop (subst t1'' s t2) (step - 1) k
+      | _ -> k @@ App (t1', t2)
     end
-    | Abs (x, t1) -> begin
-      match full with
-      | false -> k t
-      | true -> loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1')
-    end
+    | Abs (x, t1) ->
+      if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1') else k t
   in
 
   loop (scope_analysis t) max_recur Fun.id
 
-let beta_reduce_weak = beta_reduce_general ~full:false
+let beta_reduce_weak_cbn = beta_reduce_cbn ~full:false
 
-let beta_reduce_strong = beta_reduce_general ~full:true
+let beta_reduce_strong_cbn = beta_reduce_cbn ~full:true
+
+(* Beta reduction cbv *)
+
+let beta_reduce_cbv ?(max_recur = max_int) ~full t =
+  let rec loop t step k =
+    if step < 0 then failwith "max step";
+
+    match t with
+    | Var _ -> k t
+    | App (t1, t2) -> begin
+      loop t2 (step - 1) @@ fun t2' ->
+      loop t1 (step - 1) @@ fun t1' ->
+      match t1' with
+      | Abs (s, t1'') -> loop (subst t1'' s t2') (step - 1) k
+      | _ -> k @@ App (t1', t2')
+    end
+    | Abs (x, t1) ->
+      if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1') else k t
+  in
+
+  loop (scope_analysis t) max_recur Fun.id
+
+let beta_reduce_weak_cbv = beta_reduce_cbv ~full:false
+
+let beta_reduce_strong_cbv = beta_reduce_cbv ~full:true
+
+(* Beta reduction cbnd *)
+
+let beta_reduce_cbnd ?(max_recur = max_int) ~full t =
+  let rec loop t step k =
+    if step < 0 then failwith "max step";
+
+    match t with
+    | Var _ -> k t
+    | App (t1, t2) -> begin
+      loop t1 (step - 1) @@ fun t1' ->
+      match t1' with
+      | Abs (s, t1'') -> loop (subst t1'' s t2) (step - 1) k
+      | _ -> k @@ App (t1', t2)
+    end
+    | Abs (x, t1) ->
+      if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1') else k t
+  in
+
+  loop (scope_analysis t) max_recur Fun.id
+
+let beta_reduce_weak_cbnd = beta_reduce_cbnd ~full:false
+
+let beta_reduce_strong_cbnd = beta_reduce_cbnd ~full:true

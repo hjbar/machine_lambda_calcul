@@ -40,11 +40,11 @@ let test () =
       println_flush "Strong_cbv_min Random tests :";
       print_newline ();
 
-      test_random_strong_with_reference Naif_interp.eval "naif";
-      test_random_strong_with_reference Cps_v1_interp.eval "cps_v1";
-      test_random_strong_with_reference Cps_v2_interp.eval "cps_v2";
-      test_random_strong_with_reference Defunc_v1_interp.eval "defunc_v1";
-      test_random_strong_with_reference Defunc_v2_interp.eval "defunc_v2";
+      test_random_strong_cbv_with_reference Naif_interp.eval "naif";
+      test_random_strong_cbv_with_reference Cps_v1_interp.eval "cps_v1";
+      test_random_strong_cbv_with_reference Cps_v2_interp.eval "cps_v2";
+      test_random_strong_cbv_with_reference Defunc_v1_interp.eval "defunc_v1";
+      test_random_strong_cbv_with_reference Defunc_v2_interp.eval "defunc_v2";
 
       test_random_strong Naif_interp.eval Cps_v1_interp.eval "naif" "cps_v1";
       test_random_strong Naif_interp.eval Cps_v2_interp.eval "naif" "cps_v2";

@@ -1,6 +1,14 @@
 open Lambda_def
 
-val test_random_weak_with_reference :
+(* Functions for testing weak evaluator *)
+
+val test_random_weak_cbn_with_reference :
+  (lambda_term -> lambda_term) -> string -> unit
+
+val test_random_weak_cbv_with_reference :
+  (lambda_term -> lambda_term) -> string -> unit
+
+val test_random_weak_cbnd_with_reference :
   (lambda_term -> lambda_term) -> string -> unit
 
 val test_random_weak :
@@ -10,7 +18,15 @@ val test_random_weak :
   -> string
   -> unit
 
-val test_random_strong_with_reference :
+(* Functions for testing strong evaluator *)
+
+val test_random_strong_cbn_with_reference :
+  (lambda_term -> lambda_term) -> string -> unit
+
+val test_random_strong_cbv_with_reference :
+  (lambda_term -> lambda_term) -> string -> unit
+
+val test_random_strong_cbnd_with_reference :
   (lambda_term -> lambda_term) -> string -> unit
 
 val test_random_strong :

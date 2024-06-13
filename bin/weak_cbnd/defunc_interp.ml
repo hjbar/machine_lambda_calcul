@@ -1,17 +1,9 @@
 (* Definition of types *)
 
 open Lambda
-module Env = Map.Make (String)
+open Env
 
-type closure = lambda_term * env
-
-and stoval =
-  | Delayed of closure
-  | Computed of closure
-
-and env = stoval ref Env.t
-
-and cont =
+type cont =
   | CONT0
   | CONT1 of stoval ref * cont
   | CONT2 of stoval ref * cont
@@ -21,7 +13,7 @@ and cont =
 let rec interp (t : lambda_term) (e : env) (k : cont) : closure =
   match t with
   | Var x -> begin
-    let var = Env.find x e in
+    let var = find x e in
     match !var with
     | Delayed (t', e') -> interp t' e' (CONT1 (var, k))
     | Computed v -> apply v k
@@ -38,11 +30,13 @@ and apply (v : closure) (k : cont) : closure =
   | CONT2 (var, k') -> begin
     match v with
     | Abs (x, t'), e' ->
-      let e' = Env.add x var e' in
+      let e' = add x var e' in
       interp t' e' k'
     | _ -> assert false
   end
 
 (* Eval functions *)
 
-let eval t = interp t Env.empty CONT0 |> fst
+let eval t =
+  let t', e' = interp t empty CONT0 in
+  replace t' e'
