@@ -120,24 +120,12 @@ let beta_reduce_strong_cbv = beta_reduce_cbv ~full:true
 
 (* Beta reduction cbnd *)
 
-let beta_reduce_cbnd ?(max_recur = max_int) ~full t =
-  let rec loop t step k =
-    if step < 0 then failwith "max step";
+(*
+  La stratégie de réduction call by need et call by name
+  donnent le même résultat car il n'y a pas d'effets de
+  bord en Lambda-Calcul pur
+*)
 
-    match t with
-    | Var _ -> k t
-    | App (t1, t2) -> begin
-      loop t1 (step - 1) @@ fun t1' ->
-      match t1' with
-      | Abs (s, t1'') -> loop (subst t1'' s t2) (step - 1) k
-      | _ -> k @@ App (t1', t2)
-    end
-    | Abs (x, t1) ->
-      if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1') else k t
-  in
+let beta_reduce_weak_cbnd = beta_reduce_cbn ~full:false
 
-  loop (scope_analysis t) max_recur Fun.id
-
-let beta_reduce_weak_cbnd = beta_reduce_cbnd ~full:false
-
-let beta_reduce_strong_cbnd = beta_reduce_cbnd ~full:true
+let beta_reduce_strong_cbnd = beta_reduce_cbn ~full:true
