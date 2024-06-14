@@ -27,7 +27,7 @@ let rec interp (t : lambda_term) (e : env) (k : closure -> closure) : closure =
     | _ -> assert false
   end
 
-(* Eval functions *)
+(* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty Fun.id in

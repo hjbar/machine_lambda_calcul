@@ -35,7 +35,7 @@ and apply (v : closure) (k : cont) : closure =
     | _ -> assert false
   end
 
-(* Eval functions *)
+(* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty CONT0 in
