@@ -37,6 +37,8 @@ and apply (v : closure) (k : cont) : closure =
 
 (* Eval functions *)
 
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty CONT0 in
   replace t' e'
+
+let eval_with_env (t : lambda_term) : closure = interp t empty CONT0

@@ -1,5 +1,3 @@
-(* Definition of types *)
-
 open Lambda
 open Env
 
@@ -31,6 +29,8 @@ let rec interp (t : lambda_term) (e : env) (k : closure -> closure) : closure =
 
 (* Eval functions *)
 
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty Fun.id in
   replace t' e'
+
+let eval_with_env (t : lambda_term) : closure = interp t empty Fun.id

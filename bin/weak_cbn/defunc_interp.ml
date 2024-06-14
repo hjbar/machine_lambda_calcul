@@ -11,8 +11,7 @@ let rec interp (t : lambda_term) (e : env) (k : closure list) : closure =
   | Abs _ -> apply t e k
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
 
-and apply (t : lambda_term) (e : env) (k : (lambda_term * env) list) :
-  lambda_term * env =
+and apply (t : lambda_term) (e : env) (k : closure list) : closure =
   match k with
   | [] -> (t, e)
   | (t', e') :: k' -> begin
@@ -25,6 +24,8 @@ and apply (t : lambda_term) (e : env) (k : (lambda_term * env) list) :
 
 (* Functions of eval *)
 
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty [] in
   replace t' e'
+
+let eval_with_env (t : lambda_term) : closure = interp t empty []

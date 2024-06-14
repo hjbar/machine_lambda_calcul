@@ -19,6 +19,8 @@ let rec interp (t : lambda_term) (e : env) : closure =
 
 (* Functions of eval *)
 
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   let t', e' = interp t empty in
   replace t' e'
+
+let eval_with_env (t : lambda_term) : closure = interp t empty
