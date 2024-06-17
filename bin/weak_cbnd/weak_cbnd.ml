@@ -37,10 +37,11 @@ let test () =
     try
       println_flush "Weak_cbnd Random tests :";
 
+      (*
       test_random_weak_cbnd_with_reference Naif_interp.eval "naif";
       test_random_weak_cbnd_with_reference Cps_interp.eval "cps";
       test_random_weak_cbnd_with_reference Defunc_interp.eval "defunc";
-
+      *)
       test_random_weak Naif_interp.eval Cps_interp.eval "naif" "cps";
       test_random_weak Naif_interp.eval Defunc_interp.eval "naif" "defunc";
       test_random_weak Cps_interp.eval Defunc_interp.eval "cps" "defunc";

@@ -120,12 +120,10 @@ let beta_reduce_strong_cbv = beta_reduce_cbv ~full:true
 
 (* Beta reduction cbnd *)
 
-(*
-  La stratégie de réduction call by need et call by name
-  donnent le même résultat car il n'y a pas d'effets de
-  bord en Lambda-Calcul pur
-*)
+let beta_reduce_weak_cbnd ?(max_recur = max_int) t =
+  ignore @@ failwith "beta_reduce_cbnd TODO";
+  beta_reduce_cbn ~full:false ~max_recur t
 
-let beta_reduce_weak_cbnd = beta_reduce_cbn ~full:false
-
-let beta_reduce_strong_cbnd = beta_reduce_cbn ~full:true
+let beta_reduce_strong_cbnd ?(max_recur = max_int) t =
+  ignore @@ failwith "beta_reduce_cbnd TODO";
+  beta_reduce_cbn ~full:true ~max_recur t
