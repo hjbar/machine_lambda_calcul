@@ -1,54 +1,8 @@
-(* Definitions of types *)
-
 open Lambda
-
-type identifier = string
-
-type sem =
-  | Sem of (sem -> sem)
-  | Neutral of (unit -> lambda_term)
-  | Cache of lambda_term cache * sem
-
-and 'a cache = 'a option ref
-
-module Dict = Map.Make (struct
-  type t = identifier
-
-  let compare = compare
-end)
-
-type env = sem Dict.t
-
-(* Functions for variable names *)
-
-let gensym : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "x%d" !cpt
-
-let free_var : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "y%d" !cpt
+open Env
+open Utils
 
 (* Functions for interp *)
-
-let abstract_variable (x : identifier) : sem = Neutral (fun () -> Var x)
-
-let env_lookup (x : identifier) (e : env) : sem =
-  match Dict.find_opt x e with
-  | None -> abstract_variable @@ free_var ()
-  | Some var -> var
-
-let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
-  match !c with
-  | None ->
-    let cache = t () in
-    c := Some cache;
-    cache
-  | Some cache -> cache
 
 let rec reify : sem -> lambda_term = function
   | Sem f ->
@@ -56,8 +10,6 @@ let rec reify : sem -> lambda_term = function
     Abs (x, abstract_variable x |> f |> reify)
   | Neutral l -> l ()
   | Cache (c, v) -> cached_call c (fun () -> reify v)
-
-let to_sem (f : sem -> sem) : sem = Sem f
 
 let rec from_sem : sem -> sem -> sem = function
   | Sem f -> f
@@ -72,9 +24,6 @@ and apply_neutral (l : unit -> lambda_term) (v : sem) : sem =
     App (l', v')
   in
   Neutral f
-
-let mount_cache (v : sem) : sem =
-  match v with Cache _ -> v | _ -> Cache (ref None, v)
 
 let rec interp (t : lambda_term) (e : env) : sem =
   match t with

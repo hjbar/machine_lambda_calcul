@@ -6,7 +6,7 @@ open Lambda_utils
 
 let max_recursion = 10000
 
-let debug = false
+let debug = true
 
 let print_debug term reference result =
   print_newline ();
