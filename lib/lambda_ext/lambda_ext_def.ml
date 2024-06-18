@@ -25,24 +25,3 @@ let rec term_to_extended : lambda_term -> extended_terms = function
   | Var x -> Var x
   | App (t1, t2) -> App (term_to_extended t1, term_to_extended t2)
   | Abs (x, t) -> Abs (x, term_to_extended t)
-
-(* Définition of eval env *)
-
-module StringMap = Map.Make (String)
-
-type env = Env of extended_closure StringMap.t
-
-and extended_closure = extended_terms * env
-
-and value_closure = value * env
-
-let empty = Env StringMap.empty
-
-let find x env =
-  let (Env env) = env in
-  StringMap.find x env
-
-let add x elem env =
-  let (Env env) = env in
-  let env' = StringMap.add x elem env in
-  Env env'

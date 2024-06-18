@@ -6,4 +6,5 @@
   weak_cbnd
   strong_cbv_min
   strong_cbv
-  strong_cbnd))
+  strong_cbnd
+  strong_cbnd_min))

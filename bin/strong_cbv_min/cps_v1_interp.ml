@@ -1,12 +1,5 @@
 open Lambda_ext
-
-(* Functions for variable names *)
-
-let gensym : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "x%d" !cpt
+open Env
 
 (* Strong Call By Value Evaluator *)
 
@@ -52,7 +45,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) :
   extended_closure =
   match t with
   | Var x ->
-    let t', e' = find x e in
+    let t', e' = Option.value ~default:(t, e) (find_opt x e) in
     apply t' e' k
   | Abs _ -> apply t e k
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
@@ -80,6 +73,14 @@ and apply (t : extended_terms) (e : env) (k : extended_closure list) :
       in
       let ext' = Ext (l @ l') in
       (ext', e)
+    | Var _ ->
+      List.fold_left
+        begin
+          fun (acc, _) (t, e) ->
+            let t', e' = interp t e [] in
+            (App (acc, t'), e')
+        end
+        (t, e) k
     | _ -> assert false
   end
 
@@ -88,5 +89,4 @@ and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
 (* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  let t' = n (term_to_extended t) empty Fun.id |> fst in
-  extended_to_term t'
+  n (term_to_extended t) empty Fun.id |> fst |> extended_to_term

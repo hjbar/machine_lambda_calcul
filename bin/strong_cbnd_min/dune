@@ -1,0 +1,3 @@
+(library
+ (name strong_cbnd_min)
+ (libraries lambda))
