@@ -1,5 +1,23 @@
 open Lambda_def
 
+(* Codes *)
+
+let red = "\027[31m"
+
+let green = "\027[32m"
+
+let blue = "\027[33m"
+
+let reset = "\027[0m"
+
+(* Some functions on strings *)
+
+let red_string s = Format.sprintf "%s%s%s" red s reset
+
+let green_string s = Format.sprintf "%s%s%s" green s reset
+
+let blue_string s = Format.sprintf "%s%s%s" blue s reset
+
 (* Some functions of printing *)
 
 let print_newline () = Format.printf "\n%!"

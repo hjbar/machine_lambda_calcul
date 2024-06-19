@@ -20,14 +20,14 @@ let test () =
       test_weak Defunc_interp.eval strat "defunc" false;
 
       (* Fin test *)
-      println_flush "Weak_cbn tests : OK";
+      println_flush @@ green_string "Weak_cbn tests : OK";
       print_newline ()
     with err ->
       begin
         println_flush @@ Printexc.to_string err;
         print_newline ();
 
-        println_flush "Weak_cbn tests : ERROR";
+        println_flush @@ red_string "Weak_cbn tests : ERROR";
         print_newline ();
         error := true
       end
@@ -46,18 +46,18 @@ let test () =
       test_random_weak Naif_interp.eval Defunc_interp.eval "naif" "defunc";
       test_random_weak Cps_interp.eval Defunc_interp.eval "cps" "defunc";
 
-      println_flush "Weak_cbn Random tests : OK";
+      println_flush @@ green_string "Weak_cbn Random tests : OK";
       print_newline ()
     with err ->
       begin
         println_flush @@ Printexc.to_string err;
         print_newline ();
 
-        println_flush "Weak_cbn Random tests : ERROR";
+        println_flush @@ red_string "Weak_cbn Random tests : ERROR";
         print_newline ();
         error := true
       end
   in
 
-  if !error then println_flush "Weak_cbn : ERROR"
-  else println_flush "Weak_cbn : OK"
+  if !error then println_flush @@ red_string "Weak_cbn : ERROR"
+  else println_flush @@ green_string "Weak_cbn : OK"
