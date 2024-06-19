@@ -15,8 +15,4 @@ let find_opt x (Env env) = StringMap.find_opt x env
 
 let add x elem (Env env) = Env (StringMap.add x elem env)
 
-let gensym : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "x%d" !cpt
+let gensym, gensym_reset = get_gensym ~kind:Interp

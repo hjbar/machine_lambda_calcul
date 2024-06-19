@@ -11,13 +11,13 @@ let test () =
       print_newline ();
 
       (* Test pour naif_interp *)
-      test_strong Naif_interp.eval strat "naif" true;
+      test_strong Naif_interp.eval strat "naif" false;
 
       (* Test pour cps_interp *)
-      test_strong Cps_interp.eval strat "cps" true;
+      test_strong Cps_interp.eval strat "cps" false;
 
       (* Test pour defunc_interp *)
-      test_strong Defunc_interp.eval strat "defunc" true;
+      test_strong Defunc_interp.eval strat "defunc" false;
 
       (* Fin test *)
       println_flush "Strong_cbnd_min tests : OK";

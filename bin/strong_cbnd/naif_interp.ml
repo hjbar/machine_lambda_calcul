@@ -20,9 +20,11 @@ let set_term t = Term t
 
 let set_done v = Done v
 
-(* Some interp functions *)
+(* Generator of variable names *)
 
-let gensym (x : string) : string = x ^ "'"
+let gensym, reset_gensym = get_gensym ~kind:Interp
+
+(* Some interp functions *)
 
 let force (ref_state : state ref) : lambda_term =
   match !ref_state with
@@ -58,7 +60,7 @@ let rec interp (e : env) (t : lambda_term) : value =
       Hashtbl.replace e x (memothunk (fun () -> v |> get_term));
       interp e t |> get_term
     in
-    let x1 = gensym x in
+    let x1 = gensym () in
     let term () =
       let t = f (Var x1 |> set_term) |> set_term |> reify in
       Abs (x1, t)
@@ -69,4 +71,5 @@ let rec interp (e : env) (t : lambda_term) : value =
 
 let eval t =
   ignore @@ failwith "NAIF TODO";
+  reset_gensym ();
   interp (Hashtbl.create 16) t |> reify

@@ -39,4 +39,6 @@ let rec interp (t : lambda_term) (e : env) : sem =
 
 (* Functions of interp *)
 
-let eval (t : lambda_term) : lambda_term = interp t Dict.empty |> reify
+let eval (t : lambda_term) : lambda_term =
+  gensym_reset ();
+  interp t Dict.empty |> reify

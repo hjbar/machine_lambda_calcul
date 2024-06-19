@@ -13,6 +13,8 @@ and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
   | Cst x -> k (Var x, e)
   | Lam (x, b) ->
     let y = gensym () in
+    let e = add x (Var y, e) e in
+
     let t = App (Abs (x, b), Ext [ Cst y ]) in
     n t e @@ fun (t', e') -> k (Abs (y, t'), e')
   | Lst l ->
@@ -44,7 +46,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list)
   (cont : extended_closure -> extended_closure) : extended_closure =
   match t with
   | Var x ->
-    let t', e' = Option.value ~default:(t, e) (find_opt x e) in
+    let t', e' = Option.value ~default:(t, empty) (find_opt x e) in
     apply t' e' k cont
   | Abs _ -> apply t e k cont
   | App (t1, t2) -> interp t1 e ((t2, e) :: k) cont
@@ -66,17 +68,12 @@ and apply (t : extended_terms) (e : env) (k : extended_closure list)
       let l' = List.map fst val_closure_args in
       let ext' = Ext (l @ l') in
       cont (ext', e)
-    | Var _ ->
-      Cps.map (fun (t, e) -> interp t e []) k @@ fun interp_k ->
-      let closure =
-        List.fold_left
-          begin
-            fun (acc, _) (t', e') -> (App (acc, t'), e')
-          end
-          (t, e) interp_k
-      in
-      cont closure
-    | _ -> assert false
+    | Var _ | App _ ->
+      Cps.map (fun (t, e) -> interp t e []) ((t, e) :: k) @@ fun interp_k ->
+      Cps.map (fun (t, e) -> v t e) interp_k @@ fun value_k ->
+      let l = List.map fst value_k in
+      let ext = Ext l in
+      cont @@ (ext, e)
   end
 
 and weak_eval (t : extended_terms) (e : env)
@@ -86,4 +83,5 @@ and weak_eval (t : extended_terms) (e : env)
 (* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
+  gensym_reset ();
   n (term_to_extended t) empty Fun.id |> fst |> extended_to_term

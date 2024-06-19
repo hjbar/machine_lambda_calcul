@@ -1,29 +1,18 @@
 open Lambda
 open Env
 
-let gensym : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "#x%d" !cpt
+(* Gensym *)
 
-(*
-let free_var : unit -> string =
-  let cpt = ref (-1) in
-  fun () ->
-    incr cpt;
-    Format.sprintf "y%d" !cpt
-*)
+let gensym, gensym_reset = get_gensym ~kind:Interp
+
+(* Utils for interp *)
 
 let abstract_variable (x : identifier) : sem = Neutral (fun () -> Var x)
 
 let to_sem (f : sem -> sem) : sem = Sem f
 
 let env_lookup (x : identifier) (e : env) : sem =
-  match Dict.find_opt x e with
-  (* | None -> abstract_variable @@ free_var () *)
-  | None -> abstract_variable x
-  | Some var -> var
+  match Dict.find_opt x e with None -> abstract_variable x | Some var -> var
 
 let cached_call (c : 'a cache) (t : unit -> 'a) : 'a =
   match !c with

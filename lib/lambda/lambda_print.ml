@@ -13,11 +13,7 @@ let pp_lambda e =
     match e with
     | Var x -> Format.fprintf fmt "%s" x
     | Abs (s, e) -> Format.fprintf fmt "λ %s. %a" s loop e
-    | App (e1, e2) -> begin
-      match (e1, e2) with
-      | _, Var _ | Var _, _ -> Format.fprintf fmt "%a %a" loop e1 loop e2
-      | _ -> Format.fprintf fmt "(%a) (%a)" loop e1 loop e2
-    end
+    | App (e1, e2) -> Format.fprintf fmt "(%a) (%a)" loop e1 loop e2
   in
   loop Format.std_formatter e
 

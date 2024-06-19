@@ -1,19 +1,22 @@
 open Lambda_def
 open Lambda_print
 open Lambda_utils
+open Lambda_globals
 
 (* Testing with result *)
 
 let test_eval t res f msg =
   let t' = f t in
-  pp_result t t';
+  if debug then pp_result t t';
   if not @@ alpha_equiv t' res then failwith msg
 
 (* Testing for weak evaluator *)
 
 let test_weak_bis f s1 s2 with_omega pp =
-  let s_maj = String.capitalize_ascii s2 in
-  println_flush @@ s_maj ^ "_interp :";
+  if debug then begin
+    let s_maj = String.capitalize_ascii s2 in
+    println_flush @@ s_maj ^ "_interp :"
+  end;
 
   (* TEST 1 *)
   let t = Abs ("x", Var "x") in
@@ -23,17 +26,17 @@ let test_weak_bis f s1 s2 with_omega pp =
 
   (* TEST 2 *)
   if with_omega then begin
-    ignore
-      (let omega =
-         let delta = Abs ("x", App (Var "x", Var "x")) in
-         App (delta, delta)
-       in
-       f omega |> pp_result omega;
-       let msg_error = "Error with test2 in " ^ s1 ^ "_" ^ s2 in
-       failwith msg_error )
+    let omega =
+      let delta = Abs ("x", App (Var "x", Var "x")) in
+      App (delta, delta)
+    in
+    let omega' = f omega in
+    if debug then pp_result omega omega';
+    let msg_error = "Error with test2 in " ^ s1 ^ "_" ^ s2 in
+    failwith msg_error
   end;
 
-  if pp then begin
+  if pp && debug then begin
     println_flush @@ s1 ^ "_" ^ s2 ^ " : OK";
     print_newline ()
   end
@@ -79,5 +82,7 @@ let test_strong f s1 s2 with_omega =
   let msg_error = "Error with test1 in " ^ s1 ^ "_" ^ s2 in
   test_eval t cinq f msg_error;
 
-  println_flush @@ s1 ^ "_" ^ s2 ^ " : OK";
-  print_newline ()
+  if debug then begin
+    println_flush @@ s1 ^ "_" ^ s2 ^ " : OK";
+    print_newline ()
+  end

@@ -36,6 +36,7 @@ let test () =
   let () =
     try
       println_flush "Weak_cbnd Random tests :";
+      print_newline ();
 
       (*
       test_random_weak_cbnd_with_reference Naif_interp.eval "naif";
