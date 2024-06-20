@@ -4,30 +4,29 @@ open Lambda
 open Env
 
 type cont =
-  | CONT0
-  | CONT1 of stoval ref * cont
-  | CONT2 of stoval ref * cont
+  | CONT1 of stoval ref
+  | CONT2 of stoval ref
 
 (* Functions of interp *)
 
-let rec interp (t : lambda_term) (e : env) (k : cont) : closure =
+let rec interp (t : lambda_term) (e : env) (k : cont list) : closure =
   match t with
   | Var x -> begin
     let var = find x e in
     match !var with
-    | Delayed (t', e') -> interp t' e' (CONT1 (var, k))
+    | Delayed (t', e') -> interp t' e' (CONT1 var :: k)
     | Computed v -> apply v k
   end
   | Abs _ -> apply (t, e) k
-  | App (t1, t2) -> interp t1 e (CONT2 (ref @@ Delayed (t2, e), k))
+  | App (t1, t2) -> interp t1 e (CONT2 (ref @@ Delayed (t2, e)) :: k)
 
-and apply (v : closure) (k : cont) : closure =
+and apply (v : closure) (k : cont list) : closure =
   match k with
-  | CONT0 -> v
-  | CONT1 (var, k') ->
+  | [] -> v
+  | CONT1 var :: k' ->
     var := Computed v;
     apply v k'
-  | CONT2 (var, k') -> begin
+  | CONT2 var :: k' -> begin
     match v with
     | Abs (x, t'), e' ->
       let e' = add x var e' in
@@ -38,7 +37,7 @@ and apply (v : closure) (k : cont) : closure =
 (* Functions of eval *)
 
 let eval (t : lambda_term) : lambda_term =
-  let t', e' = interp t empty CONT0 in
+  let t', e' = interp t empty [] in
   replace t' e'
 
-let eval_with_env (t : lambda_term) : closure = interp t empty CONT0
+let eval_with_env (t : lambda_term) : closure = interp t empty []

@@ -37,7 +37,7 @@ and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
   | Var x -> k (Cst x, e')
   | App (t1, t2) ->
     v t1 e' @@ fun (t1', _) ->
-    v t2 e' @@ fun (t2', _) -> k @@ (Lst [ t1'; t2' ], e')
+    v t2 e' @@ fun (t2', _) -> k (Lst [ t1'; t2' ], e')
   | Abs (x, t) -> k (Lam (x, t), e')
   | Ext l -> k (Lst l, e')
 
@@ -49,9 +49,8 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) :
   | Var x ->
     let t', e' = Option.value ~default:(t, empty) (find_opt x e) in
     apply t' e' k
-  | Abs _ -> apply t e k
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
-  | Ext _ -> apply t e k
+  | Abs _ | Ext _ -> apply t e k
 
 and apply (t : extended_terms) (e : env) (k : extended_closure list) :
   extended_closure =

@@ -94,7 +94,7 @@ let beta_reduce_cbn ?(max_recur = max_int) ~full t =
       loop t1 (step - 1) @@ fun t1' ->
       match t1' with
       | Abs (s, t1'') -> loop (subst t1'' s t2) (step - 1) k
-      | _ -> k @@ App (t1', t2)
+      | _ -> loop t2 (step - 1) @@ fun t2' -> k @@ App (t1', t2')
     end
     | Abs (x, t1) ->
       if full then loop t1 (step - 1) @@ fun t1' -> k @@ Abs (x, t1') else k t

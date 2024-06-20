@@ -59,5 +59,5 @@ let test () =
       end
   in
 
-  if !error then println_flush @@ green_string "Strong_cbnd_min : ERROR"
-  else println_flush @@ red_string "Strong_cbnd_min : OK"
+  if !error then println_flush @@ red_string "Strong_cbnd_min : ERROR"
+  else println_flush @@ green_string "Strong_cbnd_min : OK"

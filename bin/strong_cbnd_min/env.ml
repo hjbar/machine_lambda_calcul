@@ -12,9 +12,8 @@ and extended_closure = extended_terms * env
 and value_closure = value * env
 
 type cont =
-  | CONT0
-  | CONT1 of stoval ref * cont
-  | CONT2 of stoval ref * cont
+  | CONT1 of stoval ref
+  | CONT2 of stoval ref
 
 let empty = Env.empty
 
