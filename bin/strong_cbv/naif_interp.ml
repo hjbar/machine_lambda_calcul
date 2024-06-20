@@ -1,6 +1,5 @@
 open Lambda
 open Env
-open Utils
 
 (* Functions for interp *)
 

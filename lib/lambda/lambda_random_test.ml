@@ -149,7 +149,7 @@ let test_random_body reference_interp fun_interp reference_name fun_name
 
     print_flush msg;
     loop rep;
-    println_flush "OK";
+    println_data "OK";
     print_newline ()
   end
   else loop rep

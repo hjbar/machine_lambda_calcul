@@ -6,7 +6,7 @@ let red = "\027[31m"
 
 let green = "\027[32m"
 
-let blue = "\027[33m"
+let blue = "\027[36m"
 
 let reset = "\027[0m"
 
@@ -25,6 +25,20 @@ let print_newline () = Format.printf "\n%!"
 let print_flush = Format.printf "%s%!"
 
 let println_flush = Format.printf "%s\n%!"
+
+let print_error s = red_string s |> print_flush
+
+let println_error s = red_string s |> println_flush
+
+let print_ok s = green_string s |> print_flush
+
+let println_ok s = green_string s |> println_flush
+
+let print_data s = blue_string s |> print_flush
+
+let println_data s = blue_string s |> println_flush
+
+(* Some functions of priting on lambda_terms *)
 
 let pp_lambda e =
   let rec loop fmt e =

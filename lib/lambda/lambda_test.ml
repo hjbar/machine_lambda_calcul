@@ -37,7 +37,7 @@ let test_weak_bis f s1 s2 with_omega pp =
   end;
 
   if pp && debug then begin
-    println_flush @@ s1 ^ "_" ^ s2 ^ " : OK";
+    println_flush @@ s1 ^ "_" ^ s2 ^ " : " ^ blue_string "OK";
     print_newline ()
   end
 
@@ -83,6 +83,6 @@ let test_strong f s1 s2 with_omega =
   test_eval t cinq f msg_error;
 
   if debug then begin
-    println_flush @@ s1 ^ "_" ^ s2 ^ " : OK";
+    println_flush @@ s1 ^ "_" ^ s2 ^ " : " ^ blue_string "OK";
     print_newline ()
   end

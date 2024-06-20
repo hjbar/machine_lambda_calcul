@@ -22,14 +22,14 @@ let test () =
          test_strong Defunc_v2_interp.eval strat "defunc_v2" true; *)
 
       (* Fin test *)
-      println_flush @@ green_string "Strong_cbv_min tests : OK";
+      println_ok "Strong_cbv_min tests : OK";
       print_newline ()
     with err ->
       begin
         println_flush @@ Printexc.to_string err;
         print_newline ();
 
-        println_flush @@ red_string "Strong_cbv_min tests : ERROR";
+        println_error "Strong_cbv_min tests : ERROR";
         print_newline ();
         error := true
       end
@@ -66,18 +66,18 @@ let test () =
 
          test_random_strong Defunc_v1_interp.eval Defunc_v2_interp.eval "defunc_v1"
            "defunc_v2"; *)
-      println_flush @@ green_string "Strong_cbv_min Random tests : OK";
+      println_ok "Strong_cbv_min Random tests : OK";
       print_newline ()
     with err ->
       begin
         println_flush @@ Printexc.to_string err;
         print_newline ();
 
-        println_flush @@ red_string "Strong_cbv_min Random tests : ERROR";
+        println_error "Strong_cbv_min Random tests : ERROR";
         print_newline ();
         error := true
       end
   in
 
-  if !error then println_flush @@ red_string "Strong_cbv_min : ERROR"
-  else println_flush @@ green_string "Strong_cbv_min : OK"
+  if !error then println_error "Strong_cbv_min : ERROR"
+  else println_ok "Strong_cbv_min : OK"

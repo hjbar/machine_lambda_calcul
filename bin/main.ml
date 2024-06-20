@@ -12,23 +12,20 @@ let () =
 
   let rec loop cond =
     if cond then begin
-      (*
       print_sep ();
       Weak_cbn.test ();
 
       print_sep ();
       Weak_cbv.test ();
-      *)
+
       print_sep ();
       Weak_cbnd.test ();
 
-      (*
       print_sep ();
       Strong_cbv.test ();
 
       print_sep ();
       Strong_cbv_min.test ();
-      *)
 
       (*
       print_sep ();
