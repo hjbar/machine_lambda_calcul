@@ -17,16 +17,14 @@ let test () =
       test_strong Cps_interp.eval strat "cps" false;
 
       (* Test pour defunc_interp *)
-      (*
       test_strong Defunc_interp.eval strat "defunc" false;
-      *)
 
       (* Fin test *)
       println_ok "Strong_cbnd_min tests : OK";
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Strong_cbnd_min tests : ERROR";
@@ -43,16 +41,17 @@ let test () =
       test_random_strong_cbnd_with_reference Naif_interp.eval "naif";
       test_random_strong_cbnd_with_reference Cps_interp.eval "cps";
 
-      (* test_random_strong_cbnd_with_reference Defunc_interp.eval "defunc"; *)
+      test_random_strong_cbnd_with_reference Defunc_interp.eval "defunc";
       test_random_strong Naif_interp.eval Cps_interp.eval "naif" "cps";
 
-      (* test_random_strong Naif_interp.eval Defunc_interp.eval "naif" "defunc";
-         test_random_strong Cps_interp.eval Defunc_interp.eval "cps" "defunc"; *)
+      test_random_strong Naif_interp.eval Defunc_interp.eval "naif" "defunc";
+      test_random_strong Cps_interp.eval Defunc_interp.eval "cps" "defunc";
+
       println_ok "Strong_cbnd_min Random tests : OK";
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Strong_cbnd_min Random tests : ERROR";

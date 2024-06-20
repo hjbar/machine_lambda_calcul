@@ -1,4 +1,4 @@
-let debug = false
+let debug = true
 
 let test_mode = false
 

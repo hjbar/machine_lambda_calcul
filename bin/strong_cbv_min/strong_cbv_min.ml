@@ -26,7 +26,7 @@ let test () =
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Strong_cbv_min tests : ERROR";
@@ -70,7 +70,7 @@ let test () =
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Strong_cbv_min Random tests : ERROR";

@@ -24,7 +24,7 @@ let test () =
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Weak_cbnd tests : ERROR";
@@ -51,7 +51,7 @@ let test () =
       print_newline ()
     with err ->
       begin
-        println_flush @@ Printexc.to_string err;
+        println_warning @@ Printexc.to_string err;
         print_newline ();
 
         println_error "Weak_cbnd Random tests : ERROR";
