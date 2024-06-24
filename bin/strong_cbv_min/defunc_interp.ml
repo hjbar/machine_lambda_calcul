@@ -22,19 +22,19 @@ and readback (v : value) (e : env) : extended_closure =
     let b = Abs (y, t') |> Option.some in
 
     apply_readback b e' []
-  | Lst l -> apply_readback None e @@ List.map (fun v -> (v, e)) l
+  | Lst l -> apply_readback None e l
 
-and apply_readback (b : extended_terms option) (e : env) (k : value_closure list)
-  : extended_closure =
+and apply_readback (b : extended_terms option) (e : env) (k : value list) :
+  extended_closure =
   match k with
   | [] -> (Option.get b, e)
-  | (v2, e2) :: k' -> begin
+  | v :: k' -> begin
     match b with
     | None ->
-      let b' = readback v2 e2 |> fst |> Option.some in
+      let b' = readback v e |> fst |> Option.some in
       apply_readback b' e k'
     | Some b ->
-      let b2 = readback v2 e2 |> fst in
+      let b2 = readback v e |> fst in
       let b' = App (b, b2) |> Option.some in
       apply_readback b' e k'
   end
