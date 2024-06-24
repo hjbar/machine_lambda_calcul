@@ -14,12 +14,10 @@ let test () =
       test_strong Naif_interp.eval strat "naif" false;
 
       (* Test pour cps_interp *)
-      test_strong Cps_v1_interp.eval strat "cps_v1" false;
-      test_strong Cps_v2_interp.eval strat "cps_v2" false;
+      test_strong Cps_interp.eval strat "cps" false;
 
       (* Test pour defunc_interp *)
-      (* test_strong Defunc_v1_interp.eval strat "defunc_v1" true;
-         test_strong Defunc_v2_interp.eval strat "defunc_v2" true; *)
+      test_strong Defunc_interp.eval strat "defunc" false;
 
       (* Fin test *)
       println_ok "Strong_cbv_min tests : OK";
@@ -42,31 +40,13 @@ let test () =
       print_newline ();
 
       test_random_strong_cbv_with_reference Naif_interp.eval "naif";
-      test_random_strong_cbv_with_reference Cps_v1_interp.eval "cps_v1";
-      test_random_strong_cbv_with_reference Cps_v2_interp.eval "cps_v2";
+      test_random_strong_cbv_with_reference Cps_interp.eval "cps";
+      test_random_strong_cbv_with_reference Defunc_interp.eval "defunc";
 
-      (* test_random_strong_cbv_with_reference Defunc_v1_interp.eval "defunc_v1";
-         test_random_strong_cbv_with_reference Defunc_v2_interp.eval "defunc_v2"; *)
-      test_random_strong Naif_interp.eval Cps_v1_interp.eval "naif" "cps_v1";
-      test_random_strong Naif_interp.eval Cps_v2_interp.eval "naif" "cps_v2";
+      test_random_strong Naif_interp.eval Cps_interp.eval "naif" "cps";
+      test_random_strong Naif_interp.eval Defunc_interp.eval "naif" "defunc";
+      test_random_strong Defunc_interp.eval Cps_interp.eval "defunc" "cps";
 
-      (* test_random_strong Naif_interp.eval Defunc_v1_interp.eval "naif"
-           "defunc_v1";
-         test_random_strong Naif_interp.eval Defunc_v2_interp.eval "naif"
-           "defunc_v2"; *)
-      test_random_strong Cps_v1_interp.eval Cps_v2_interp.eval "cps_v1" "cps_v2";
-
-      (* test_random_strong Cps_v1_interp.eval Defunc_v1_interp.eval "cps_v1"
-           "defunc_v1";
-         test_random_strong Cps_v1_interp.eval Defunc_v2_interp.eval "cps_v1"
-           "defunc_v2";
-         test_random_strong Cps_v2_interp.eval Defunc_v1_interp.eval "cps_v2"
-           "defunc_v1";
-         test_random_strong Cps_v2_interp.eval Defunc_v2_interp.eval "cps_v2"
-           "defunc_v2";
-
-         test_random_strong Defunc_v1_interp.eval Defunc_v2_interp.eval "defunc_v1"
-           "defunc_v2"; *)
       println_ok "Strong_cbv_min Random tests : OK";
       print_newline ()
     with err ->
