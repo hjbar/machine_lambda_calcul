@@ -12,7 +12,6 @@ let () =
 
   let rec loop cond =
     if cond then begin
-      (*
       print_sep ();
       Weak_cbn.test ();
 
@@ -28,6 +27,7 @@ let () =
       print_sep ();
       Strong_cbv_min.test ();
 
+      (*
       print_sep ();
       Strong_cbnd.test ();
       *)
