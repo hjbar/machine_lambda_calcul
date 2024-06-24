@@ -6,8 +6,6 @@ open Lambda_globals
 
 (* Constants *)
 
-let max_recursion = low_recursions
-
 let print_debug term reference result =
   print_newline ();
 

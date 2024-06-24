@@ -4,14 +4,7 @@ let rec pp_extended (fmt : Format.formatter) (t : extended_terms) : unit =
   match t with
   | Var x -> Format.fprintf fmt "%s" x
   | Abs (x, t) -> Format.fprintf fmt "λ %s. %a" x pp_extended t
-  | App (t1, t2) -> begin
-    match (t1, t2) with
-    | Abs _, Abs _ | App _, App _ ->
-      Format.fprintf fmt "(%a) (%a)" pp_extended t1 pp_extended t2
-    | _, Var _ | Var _, _ | _, Ext _ | Ext _, _ ->
-      Format.fprintf fmt "%a %a" pp_extended t1 pp_extended t2
-    | _ -> Format.fprintf fmt "%a (%a)" pp_extended t1 pp_extended t2
-  end
+  | App (t1, t2) -> Format.fprintf fmt "(%a) (%a)" pp_extended t1 pp_extended t2
   | Ext l ->
     Format.fprintf fmt "[";
     Format.pp_print_list

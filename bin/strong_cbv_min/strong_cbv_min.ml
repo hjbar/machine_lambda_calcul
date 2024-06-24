@@ -26,6 +26,7 @@ let test () =
       print_newline ()
     with err ->
       begin
+        if test_mode then raise err;
         println_warning @@ Printexc.to_string err;
         print_newline ();
 
@@ -70,6 +71,7 @@ let test () =
       print_newline ()
     with err ->
       begin
+        if test_mode then raise err;
         println_warning @@ Printexc.to_string err;
         print_newline ();
 

@@ -27,8 +27,7 @@ let () =
 
       print_sep ();
       Strong_cbv_min.test ();
-      *)
-      (*
+
       print_sep ();
       Strong_cbnd.test ();
       *)

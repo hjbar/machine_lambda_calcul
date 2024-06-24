@@ -75,17 +75,10 @@ and apply (t : extended_terms) (e : env) (k : extended_closure list) :
       let ext' = Ext (l @ l') in
       (ext', e)
     | Var _ | App _ ->
-      let l =
-        List.map
-          begin
-            fun (t, e) ->
-              let t', e' = interp t e [] in
-              v t' e' Fun.id |> fst
-          end
-          ((t, e) :: k)
-      in
-      let ext = Ext l in
-      (ext, e)
+      let t2', e2' = interp t2 e2 [] in
+      let t' = App (t, t2') in
+      let e' = union e e2' in
+      apply t' e' k'
   end
 
 and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []

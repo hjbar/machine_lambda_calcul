@@ -78,9 +78,10 @@ and apply (t : extended_terms) (e : env) (k : cont list) : extended_closure =
       apply ext' e k'
     | Var _ | App _ ->
       let t2, e2 = unwrap var in
-      let t2 = interp t2 e2 [] |> fst in
-      let t' = App (t, t2) in
-      apply t' e k'
+      let t2', e2' = interp t2 e2 [] in
+      let t' = App (t, t2') in
+      let e' = union e e2' in
+      apply t' e' k'
   end
 
 and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
