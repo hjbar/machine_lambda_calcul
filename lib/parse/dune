@@ -1,0 +1,10 @@
+(ocamllex
+ (modules lamblexer))
+
+(menhir
+ (modules lambparser)
+ (flags --explain --dump)
+ (infer true))
+
+(library
+ (name parse))

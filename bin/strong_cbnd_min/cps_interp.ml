@@ -5,8 +5,8 @@ open Env
 
 (* Strong Cbnd Interp *)
 
-let rec norm (b : extended_terms) (e : env)
-  (k : extended_closure -> extended_closure) : extended_closure =
+let rec norm (b : extended_terms) (e : env) (k : extended_closure -> extended_closure) :
+  extended_closure =
   let b', e' = value b e Fun.id in
   readback b' e' k
 
@@ -25,15 +25,13 @@ and readback (v : value) (e : env) (k : extended_closure -> extended_closure) :
     let t_opt =
       List.fold_left
         begin
-          fun acc (t, _) ->
-            match acc with None -> Some t | Some acc' -> Some (App (acc', t))
+          fun acc (t, _) -> match acc with None -> Some t | Some acc' -> Some (App (acc', t))
         end
         None l'
     in
     k (Option.get t_opt, e)
 
-and value (b : extended_terms) (e : env) (k : value_closure -> value_closure) :
-  value_closure =
+and value (b : extended_terms) (e : env) (k : value_closure -> value_closure) : value_closure =
   let b', e' = weak_eval b e in
   match b' with
   | Var x -> k (Cst x, e')

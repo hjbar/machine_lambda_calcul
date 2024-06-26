@@ -3,6 +3,10 @@ default: clear clean fmt build exec
 clean:
 	@dune clean
 
+full_clean:
+	@dune clean
+	@rm -rf tests/*
+
 build:
 	@dune build
 

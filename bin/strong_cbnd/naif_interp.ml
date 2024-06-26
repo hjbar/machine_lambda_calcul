@@ -46,9 +46,7 @@ let rec interp (e : env) (t : lambda_term) : value =
   match t with
   | Var x ->
     let res =
-      match Hashtbl.find_opt e x with
-      | None -> Var x |> set_done |> ref
-      | Some res -> res
+      match Hashtbl.find_opt e x with None -> Var x |> set_done |> ref | Some res -> res
     in
     force res |> set_term
   | App (t, u) ->

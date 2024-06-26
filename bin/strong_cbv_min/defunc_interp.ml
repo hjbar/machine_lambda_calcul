@@ -24,8 +24,7 @@ and readback (v : value) (e : env) : extended_closure =
     apply_readback b e' []
   | Lst l -> apply_readback None e l
 
-and apply_readback (b : extended_terms option) (e : env) (k : value list) :
-  extended_closure =
+and apply_readback (b : extended_terms option) (e : env) (k : value list) : extended_closure =
   match k with
   | [] -> (Option.get b, e)
   | v :: k' -> begin
@@ -39,8 +38,7 @@ and apply_readback (b : extended_terms option) (e : env) (k : value list) :
       apply_readback b' e k'
   end
 
-and value (b : extended_terms) (e : env) (k : extended_closure list) :
-  value_closure =
+and value (b : extended_terms) (e : env) (k : extended_closure list) : value_closure =
   let b', e' = weak_eval b e in
   match b' with
   | Var x -> apply_value (Cst x) e' k
@@ -48,8 +46,7 @@ and value (b : extended_terms) (e : env) (k : extended_closure list) :
   | Ext l -> apply_value (Lst l) e' k
   | App (t1, t2) -> value t1 e' ((t2, e') :: k)
 
-and apply_value (v : value) (e : env) (k : extended_closure list) :
-  value_closure =
+and apply_value (v : value) (e : env) (k : extended_closure list) : value_closure =
   match k with
   | [] -> (v, e)
   | (b2, e2) :: k' ->
@@ -59,8 +56,7 @@ and apply_value (v : value) (e : env) (k : extended_closure list) :
 
 (* Evaluator for weak normal form *)
 
-and interp (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match t with
   | Var x ->
     let t', e' = Option.value ~default:(t, empty) (find_opt x e) in
@@ -68,8 +64,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) :
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
   | Abs _ | Ext _ -> apply t e k
 
-and apply (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match k with
   | [] -> (t, e)
   | (t2, e2) :: k' -> begin

@@ -41,9 +41,7 @@ let pp_env e =
   loop Format.std_formatter e
 
 let replace t e =
-  let unwrap content =
-    match !content with Delayed (t, e) | Computed (t, e) -> (t, e)
-  in
+  let unwrap content = match !content with Delayed (t, e) | Computed (t, e) -> (t, e) in
   let rec loop t e k =
     match t with
     | Var x -> begin

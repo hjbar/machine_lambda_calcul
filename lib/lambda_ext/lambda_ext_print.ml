@@ -7,9 +7,7 @@ let rec pp_extended (fmt : Format.formatter) (t : extended_terms) : unit =
   | App (t1, t2) -> Format.fprintf fmt "(%a) (%a)" pp_extended t1 pp_extended t2
   | Ext l ->
     Format.fprintf fmt "[";
-    Format.pp_print_list
-      ?pp_sep:(Some (fun fmt () -> Format.fprintf fmt ", "))
-      pp_value fmt l;
+    Format.pp_print_list ?pp_sep:(Some (fun fmt () -> Format.fprintf fmt ", ")) pp_value fmt l;
     Format.fprintf fmt "]"
 
 and pp_value (fmt : Format.formatter) (v : value) : unit =
@@ -18,12 +16,9 @@ and pp_value (fmt : Format.formatter) (v : value) : unit =
   | Lam (x, t) -> Format.fprintf fmt "λ %s. %a" x pp_extended t
   | Lst l ->
     Format.fprintf fmt "[";
-    Format.pp_print_list
-      ?pp_sep:(Some (fun fmt () -> Format.fprintf fmt ", "))
-      pp_value fmt l;
+    Format.pp_print_list ?pp_sep:(Some (fun fmt () -> Format.fprintf fmt ", ")) pp_value fmt l;
     Format.fprintf fmt "]"
 
-let pp_lambda_ext (t : extended_terms) : unit =
-  pp_extended Format.std_formatter t
+let pp_lambda_ext (t : extended_terms) : unit = pp_extended Format.std_formatter t
 
 let pp_lambda_val (v : value) : unit = pp_value Format.std_formatter v

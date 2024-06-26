@@ -1,7 +1,6 @@
 open Lambda_ext_def
 
-let subst (t1 : extended_terms) (s : string) (t2 : extended_terms) :
-  extended_terms =
+let subst (t1 : extended_terms) (s : string) (t2 : extended_terms) : extended_terms =
   let rec loop t l k =
     match t with
     | Var x -> k @@ if x = s && not (List.mem x l) then t2 else t

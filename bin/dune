@@ -1,10 +1,12 @@
 (executable
  (name main)
  (libraries
+  printing
   weak_cbn
   weak_cbv
   weak_cbnd
   strong_cbv_min
   strong_cbv
   strong_cbnd
-  strong_cbnd_min))
+  strong_cbnd_min
+  state))

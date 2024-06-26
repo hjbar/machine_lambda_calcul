@@ -22,8 +22,6 @@ let add x elem env =
 
 let rec replace t e =
   match t with
-  | Var x -> begin
-    match find_opt x e with None -> Var x | Some (t', e') -> replace t' e'
-  end
+  | Var x -> begin match find_opt x e with None -> Var x | Some (t', e') -> replace t' e' end
   | App (t1, t2) -> App (replace t1 e, replace t2 e)
   | Abs (x, t) -> Abs (x, replace t e)

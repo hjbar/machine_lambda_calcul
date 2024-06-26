@@ -1,0 +1,3 @@
+(library
+ (name de_bruijn)
+ (libraries lambda parse))

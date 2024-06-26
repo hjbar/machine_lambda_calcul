@@ -43,8 +43,7 @@ and v (t : extended_terms) (e : env) : value_closure =
   in
   (v', e')
 
-and interp (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match t with
   | Var x ->
     let t', e' = Option.value ~default:(t, empty) (find_opt x e) in
@@ -52,8 +51,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) :
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
   | Abs _ | Ext _ -> apply t e k
 
-and apply (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match k with
   | [] -> (t, e)
   | (t2, e2) :: k' -> begin

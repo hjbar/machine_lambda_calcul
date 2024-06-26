@@ -1,3 +1,3 @@
 (library
  (name strong_cbnd)
- (libraries lambda))
+ (libraries lambda printing state testing))

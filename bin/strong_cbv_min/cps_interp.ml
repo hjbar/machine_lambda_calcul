@@ -3,13 +3,12 @@ open Env
 
 (* Strong Call By Value Evaluator *)
 
-let rec n (b : extended_terms) (e : env)
-  (k : extended_closure -> extended_closure) : extended_closure =
+let rec n (b : extended_terms) (e : env) (k : extended_closure -> extended_closure) :
+  extended_closure =
   let b', e' = v b e Fun.id in
   r b' e' k
 
-and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
-  extended_closure =
+and r (v : value) (e : env) (k : extended_closure -> extended_closure) : extended_closure =
   match v with
   | Cst x -> k (Var x, e)
   | Lam (x, b) ->
@@ -23,15 +22,13 @@ and r (v : value) (e : env) (k : extended_closure -> extended_closure) :
     let t_opt =
       List.fold_left
         begin
-          fun acc (t, _) ->
-            match acc with None -> Some t | Some acc' -> Some (App (acc', t))
+          fun acc (t, _) -> match acc with None -> Some t | Some acc' -> Some (App (acc', t))
         end
         None l'
     in
     k (Option.get t_opt, e)
 
-and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
-  value_closure =
+and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) : value_closure =
   let t', e' = weak_eval t e in
   match t' with
   | Var x -> k (Cst x, e')
@@ -43,8 +40,7 @@ and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) :
 
 (* Evaluator for weak normal form *)
 
-and interp (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match t with
   | Var x ->
     let t', e' = Option.value ~default:(t, empty) (find_opt x e) in
@@ -52,8 +48,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) :
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
   | Abs _ | Ext _ -> apply t e k
 
-and apply (t : extended_terms) (e : env) (k : extended_closure list) :
-  extended_closure =
+and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match k with
   | [] -> (t, e)
   | (t2, e2) :: k' -> begin
