@@ -1,3 +1,3 @@
 _build
 *.exe
-tests/*
+tests/weak_lambda_terms.lamb
