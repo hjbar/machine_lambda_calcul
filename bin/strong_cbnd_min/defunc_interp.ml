@@ -64,7 +64,7 @@ and interp (t : extended_terms) (e : env) (k : cont list) : extended_closure =
   match t with
   | Var x -> begin
     match find_opt x e with
-    | None -> apply t empty k
+    | None -> apply (Ext [ Cst x ]) empty k
     | Some var -> begin
       match !var with
       | Delayed (t', e') -> interp t' e' (CONT1 var :: k)
@@ -91,12 +91,7 @@ and apply (t : extended_terms) (e : env) (k : cont list) : extended_closure =
       let v = value t2' e2' [] |> fst in
       let ext' = Ext (l @ [ v ]) in
       apply ext' e k'
-    | Var _ | App _ ->
-      let t2, e2 = unwrap var in
-      let t2', e2' = interp t2 e2 [] in
-      let t' = App (t, t2') in
-      let e' = union e e2' in
-      apply t' e' k'
+    | _ -> assert false
   end
 
 (* Functions of eval *)
