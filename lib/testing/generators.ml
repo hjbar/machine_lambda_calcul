@@ -2,27 +2,26 @@ open Lambda
 
 (* Generator of weak lambda_term  *)
 
-let random_choose l =
-  if List.is_empty l then failwith "Any element in the list";
+let random_choose l d =
+  if d = 0 then failwith "Any element in the list";
 
-  let arr = Array.of_list l in
-  let idx = Random.full_int @@ Array.length arr in
-  arr.(idx)
+  let idx = Random.full_int d in
+  List.nth l idx
 
 let rec create_term_weak (n : int) : lambda_term =
   let gensym, gensym_reset = get_gensym ~kind:Test in
 
-  let rec loop n vars =
+  let rec loop n vars d =
     match n with
-    | 0 -> Var (random_choose vars)
-    | n when Random.int 100 <= 80 ->
+    | 0 -> Var (random_choose vars d)
+    | n when Random.int 100 < 80 ->
       let x = gensym () in
-      Abs (x, loop (n - 1) (x :: vars))
-    | n -> App (loop (n / 2) vars, loop (n / 2) vars)
+      Abs (x, loop (n - 1) (x :: vars) (d + 1))
+    | n -> App (loop (n / 2) vars d, loop (n / 2) vars d)
   in
 
   gensym_reset ();
-  try loop n [] with _ -> create_term_weak n
+  try loop n [] 0 with _ -> create_term_weak n
 
 (* Generators of lambda_terms  *)
 

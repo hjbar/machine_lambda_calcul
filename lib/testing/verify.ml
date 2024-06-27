@@ -27,17 +27,26 @@ let print_debug term reference result =
 (* Terms *)
 
 let weak_terms, strong_terms =
-  println_flush "Parsing tests ...";
+  match generate_mode with
+  | Off -> begin
+    println_flush "Parsing tests ...";
 
-  let weak_terms_htbl = weak_terms_htbl () in
-  let strong_terms_htbl = strong_terms_htbl () in
+    let weak_terms_htbl, strong_terms_htbl =
+      match testing_mode with
+      | WeakOnly -> (Option.some @@ weak_terms_htbl (), None)
+      | StrongOnly -> (None, Option.some @@ strong_terms_htbl ())
+      | All -> (Option.some @@ weak_terms_htbl (), Option.some @@ strong_terms_htbl ())
+    in
 
-  Sys.command "clear" |> ignore;
-  (weak_terms_htbl, strong_terms_htbl)
+    Sys.command "clear" |> ignore;
+    (weak_terms_htbl, strong_terms_htbl)
+  end
+  | _ -> (None, None)
 
 (* General functions of testing *)
 
-let test_random_body reference_interp fun_interp reference_name fun_name ~version =
+let test_random_body reference_interp fun_interp reference_name fun_name
+  ~(version : kind_reduction) =
   if debug then begin
     let version = match version with Weak -> "Weak" | Strong -> "Strong" in
     let reference_name = String.capitalize_ascii reference_name in
@@ -49,7 +58,7 @@ let test_random_body reference_interp fun_interp reference_name fun_name ~versio
     print_flush msg
   end;
 
-  let htbl = match version with Weak -> weak_terms | Strong -> strong_terms in
+  let htbl = Option.get @@ match version with Weak -> weak_terms | Strong -> strong_terms in
   let cpt = ref max_terms_tested in
 
   let () =
@@ -99,17 +108,12 @@ let test_random_weak f1 f2 s1 s2 = random_weak f1 f2 s1 s2
 let random_strong = test_random_body ~version:Strong
 
 let test_random_strong_cbn_with_reference f s =
-  random_weak beta_reduce_strong_cbn f "beta reduction" s;
   random_strong beta_reduce_strong_cbn f "beta reduction" s
 
 let test_random_strong_cbv_with_reference f s =
-  random_weak beta_reduce_strong_cbv f "beta reduction" s;
   random_strong beta_reduce_strong_cbv f "beta reduction" s
 
 let test_random_strong_cbnd_with_reference f s =
-  random_weak beta_reduce_strong_cbnd f "beta reduction" s;
   random_strong beta_reduce_strong_cbnd f "beta reduction" s
 
-let test_random_strong f1 f2 s1 s2 =
-  random_weak f1 f2 s1 s2;
-  random_strong f1 f2 s1 s2
+let test_random_strong f1 f2 s1 s2 = random_strong f1 f2 s1 s2

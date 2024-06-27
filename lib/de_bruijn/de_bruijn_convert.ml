@@ -16,9 +16,9 @@ let rec expr_to_de_bruijn (e : expr) : de_bruijn_term =
 let lambda_to_de_bruijn (t : lambda_term) : de_bruijn_term =
   let rec loop (t : lambda_term) (d : int) (l : string list) : de_bruijn_term =
     match t with
-    | Var x -> begin
-      match List.find_index (fun n -> n = x) l with None -> Var d | Some n -> Var n
-    end
+    | Var x ->
+      let n' = List.find_index (fun n -> n = x) l |> Option.value ~default:d in
+      Var n'
     | App (t1, t2) ->
       let t1' = loop t1 d l in
       let t2' = loop t2 d l in
@@ -41,11 +41,9 @@ let de_bruijn_to_lambda (t : de_bruijn_term) : lambda_term =
 
   let rec loop (t : de_bruijn_term) (l : int list) : lambda_term =
     match t with
-    | Var n -> begin
-      match List.find_index (fun x -> x = n) l with
-      | None -> Var (name n)
-      | Some x -> Var (name x)
-    end
+    | Var n ->
+      let n' = List.nth_opt l n |> Option.value ~default:n in
+      Var (name n')
     | App (t1, t2) ->
       let t1' = loop t1 l in
       let t2' = loop t2 l in

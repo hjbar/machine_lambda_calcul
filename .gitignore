@@ -1,3 +1,5 @@
 _build
 *.exe
+tests/infinite_lambda_terms.lamb
+tests/strong_lambda_terms.lamb
 tests/weak_lambda_terms.lamb

@@ -11,7 +11,7 @@ let infinite_lambda_file = "tests/infinite_lambda_terms.lamb"
 (* Parameters for testing *)
 
 let max_terms_tested =
-  match testing_state with
+  match testing_speed with
   | Fast -> 10000
   | Low -> 500000
   | Mid -> 1000000
@@ -24,5 +24,8 @@ let max_recursions, max_rep, prof_list =
   match generate_mode with
   | Off -> (0, 0, [])
   | Low -> (10000, 100000, [ 1; 10; 100 ])
-  | Mid -> (50000, 500000, [ 1; 10; 100; 1000 ])
-  | High -> (100000, 1000000, [ 1; 10; 100; 1000; 10000 ])
+  | Mid -> (25000, 500000, [ 1; 10; 100; 1000 ])
+  | High -> (50000, 1000000, [ 1; 10; 100; 1000; 10000 ])
+  | VeryHigh -> (100000, 2500000, [ 1; 10; 100; 1000; 10000; 100000 ])
+
+let mod_indicator = max_rep / 10
