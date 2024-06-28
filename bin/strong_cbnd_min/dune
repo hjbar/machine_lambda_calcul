@@ -1,3 +1,3 @@
 (library
  (name strong_cbnd_min)
- (libraries lambda_ext printing state testing cps))
+ (libraries lambda_ext utils printing state testing cps))

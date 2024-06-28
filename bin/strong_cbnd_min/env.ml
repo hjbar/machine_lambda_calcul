@@ -1,4 +1,5 @@
 open Lambda_ext
+open Utils
 module Env = Map.Make (String)
 
 type env = stoval ref Env.t

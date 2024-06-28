@@ -1,4 +1,5 @@
 open Lambda
+open Env
 
 (* Definition of types *)
 
@@ -19,10 +20,6 @@ let get_term t = match t with Term t -> t | _ -> assert false
 let set_term t = Term t
 
 let set_done v = Done v
-
-(* Generator of variable names *)
-
-let gensym, reset_gensym = get_gensym ~kind:Interp
 
 (* Some interp functions *)
 

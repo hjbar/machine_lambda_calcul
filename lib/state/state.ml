@@ -18,7 +18,7 @@ type kind_testing =
   | StrongOnly
   | All
 
-let testing_mode = StrongOnly
+let testing_mode = All
 
 (* Generate parameters *)
 
@@ -36,4 +36,4 @@ type generate_state =
   | High
   | VeryHigh
 
-let generate_mode = Off
+let generate_mode = Low

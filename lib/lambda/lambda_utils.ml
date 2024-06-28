@@ -1,21 +1,5 @@
 open Lambda_def
-open Lambda_enum
-
-(* Gensym *)
-
-let gensym_general var =
-  let cpt = ref ~-1 in
-
-  let gensym () =
-    incr cpt;
-    Format.sprintf "%s%d" var !cpt
-  in
-  let reset () = cpt := 0 in
-
-  (gensym, reset)
-
-let get_gensym ~kind =
-  match kind with Interp -> gensym_general "#x" | Test -> gensym_general "x"
+open Utils
 
 (* Alpha equivalence *)
 
@@ -52,6 +36,7 @@ let alpha_equiv e1 e2 =
 let scope_analysis t =
   let module Env = Map.Make (String) in
   let gensym, gensym_reset = get_gensym ~kind:Interp in
+
   let rec loop t env k =
     match t with
     | Var x ->
@@ -64,6 +49,7 @@ let scope_analysis t =
       let x' = gensym () in
       loop t (Env.add x x' env) @@ fun t' -> k @@ Abs (x', t')
   in
+
   gensym_reset ();
   loop t Env.empty Fun.id
 

@@ -1,4 +1,5 @@
 open Lambda
+open Utils
 
 (* Generator of weak lambda_term  *)
 

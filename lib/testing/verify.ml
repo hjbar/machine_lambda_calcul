@@ -1,13 +1,12 @@
 open Lambda
 open De_bruijn
 open Printing
+open Utils
 open State
 open Writing
 open Globals
 
 (* Utils *)
-
-exception Return of unit
 
 let print_debug term reference result =
   print_newline ();

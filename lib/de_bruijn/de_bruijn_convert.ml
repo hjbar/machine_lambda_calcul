@@ -37,13 +37,14 @@ let de_bruijn_to_lambda (t : de_bruijn_term) : lambda_term =
       !cpt
   in
 
-  let name n = Format.sprintf "x%d" n in
+  let bind n = Format.sprintf "#x%d" n in
+  let free n = Format.sprintf "x%d" n in
 
   let rec loop (t : de_bruijn_term) (l : int list) : lambda_term =
     match t with
-    | Var n ->
-      let n' = List.nth_opt l n |> Option.value ~default:n in
-      Var (name n')
+    | Var n -> begin
+      match List.nth_opt l n with None -> Var (free n) | Some n' -> Var (bind n')
+    end
     | App (t1, t2) ->
       let t1' = loop t1 l in
       let t2' = loop t2 l in
@@ -51,7 +52,7 @@ let de_bruijn_to_lambda (t : de_bruijn_term) : lambda_term =
     | Abs t1 ->
       let id = uid () in
       let t1' = loop t1 (id :: l) in
-      Abs (name id, t1')
+      Abs (bind id, t1')
   in
 
   loop t []

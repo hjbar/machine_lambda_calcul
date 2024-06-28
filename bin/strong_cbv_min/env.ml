@@ -1,4 +1,5 @@
 open Lambda_ext
+open Utils
 module StringMap = Map.Make (String)
 
 type env = Env of extended_closure StringMap.t

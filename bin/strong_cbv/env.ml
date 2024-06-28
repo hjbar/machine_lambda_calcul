@@ -1,4 +1,5 @@
 open Lambda
+open Utils
 
 (* Definition of types *)
 

@@ -1,4 +1,5 @@
 open Lambda
+open Utils
 
 (* Definition of types *)
 
@@ -23,7 +24,7 @@ type env = sem Dict.t
 
 (* Gensym *)
 
-let gensym, gensym_reset = get_gensym ~kind:Interp
+let gensym, reset_gensym = get_gensym ~kind:Interp
 
 (* Some utils functions for interp *)
 
