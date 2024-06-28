@@ -53,17 +53,13 @@ let write_generate_term t ~out_htbl ~inf_htbl ~out_c ~inf_c ~interp =
   let t' = lambda_to_de_bruijn t in
 
   try
-    begin
-      if Hashtbl.mem out_htbl t' then ();
-
+    if not @@ Hashtbl.mem out_htbl t' then begin
       interp t |> ignore;
       Hashtbl.replace out_htbl t' ();
       write_term out_c t'
     end
   with _ ->
-    begin
-      if Hashtbl.mem inf_htbl t' then ();
-
+    if not @@ Hashtbl.mem inf_htbl t' then begin
       Hashtbl.replace inf_htbl t' ();
       write_term inf_c t'
     end
