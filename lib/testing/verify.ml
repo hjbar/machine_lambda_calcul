@@ -33,9 +33,11 @@ let weak_terms, strong_terms =
 
     let weak_terms_htbl, strong_terms_htbl =
       match testing_mode with
-      | WeakOnly -> (Option.some @@ weak_terms_htbl (), None)
-      | StrongOnly -> (None, Option.some @@ strong_terms_htbl ())
-      | All -> (Option.some @@ weak_terms_htbl (), Option.some @@ strong_terms_htbl ())
+      | WeakOnly -> (Option.some @@ weak_terms_htbl ~limit:max_terms_tested (), None)
+      | StrongOnly -> (None, Option.some @@ strong_terms_htbl ~limit:max_terms_tested ())
+      | All ->
+        ( Option.some @@ weak_terms_htbl ~limit:max_terms_tested ()
+        , Option.some @@ strong_terms_htbl ~limit:max_terms_tested () )
     in
 
     Sys.command "clear" |> ignore;

@@ -18,7 +18,7 @@ type kind_testing =
   | StrongOnly
   | All
 
-let testing_mode = WeakOnly
+let testing_mode = StrongOnly
 
 (* Generate parameters *)
 

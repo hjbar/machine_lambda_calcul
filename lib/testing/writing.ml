@@ -6,6 +6,10 @@ open State
 open Globals
 open Generators
 
+(* Utils *)
+
+exception Return of unit
+
 (* Interpters of reference *)
 
 let weak_interp = beta_reduce_weak_cbv ~max_recur:max_recursions
@@ -20,25 +24,31 @@ let write_term out_c t = output_string out_c @@ Format.sprintf "%s ;\n" (de_brui
 
 (* File to htbl *)
 
-let file_to_htbl file =
+let file_to_htbl file limit =
   let terms = parse_file file in
   let htbl = Hashtbl.create 16 in
 
-  List.iter
-    begin
-      fun t ->
-        let t' = expr_to_de_bruijn t in
-        Hashtbl.replace htbl t' ()
-    end
-    terms;
+  let () =
+    try
+      List.iteri
+        begin
+          fun i t ->
+            if i = limit then raise (Return ());
+
+            let t' = expr_to_de_bruijn t in
+            Hashtbl.replace htbl t' ()
+        end
+        terms
+    with Return () -> ()
+  in
 
   htbl
 
-let weak_terms_htbl () = file_to_htbl weak_lambda_file
+let weak_terms_htbl ?(limit = max_int) () = file_to_htbl weak_lambda_file limit
 
-let strong_terms_htbl () = file_to_htbl strong_lambda_file
+let strong_terms_htbl ?(limit = max_int) () = file_to_htbl strong_lambda_file limit
 
-let infinite_terms_htbl () = file_to_htbl infinite_lambda_file
+let infinite_terms_htbl ?(limit = max_int) () = file_to_htbl infinite_lambda_file limit
 
 (* General terms writing *)
 
