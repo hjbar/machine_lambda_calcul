@@ -37,8 +37,8 @@ let de_bruijn_to_lambda (t : de_bruijn_term) : lambda_term =
       !cpt
   in
 
-  let bind n = Format.sprintf "#x%d" n in
-  let free n = Format.sprintf "x%d" n in
+  let bind n = Format.sprintf "x%d" n in
+  let free n = Format.sprintf "y%d" n in
 
   let rec loop (t : de_bruijn_term) (l : int list) : lambda_term =
     match t with

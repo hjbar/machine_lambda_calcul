@@ -74,7 +74,7 @@ let test_list ~rep =
 
     let rec loop rep prof acc =
       match rep with
-      | 1 -> (rep, prof) :: acc
+      | n when n <= 1 -> (rep, prof) :: acc
       | _ -> loop (rep / 10) (up prof) ((rep, prof) :: acc)
     in
     loop rep base []
@@ -138,7 +138,7 @@ let generate_strong_terms ~strong_htbl ~inf_htbl ~strong_c ~inf_c ~limit =
 (* Generate terms *)
 
 let generate_terms () =
-  if debug then println_flush "Début generate_terms\nParsing terms...";
+  if debug then println_flush "Début generate_terms";
 
   if debug then println_flush "Parsing terms...";
 

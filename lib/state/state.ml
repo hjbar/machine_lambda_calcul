@@ -11,7 +11,7 @@ type testing_state =
   | High
   | Full
 
-let testing_speed = Full
+let testing_speed = Fast
 
 type kind_testing =
   | WeakOnly
@@ -36,4 +36,4 @@ type generate_state =
   | High
   | VeryHigh
 
-let generate_mode = Low
+let generate_mode = Off
