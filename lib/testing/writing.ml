@@ -57,15 +57,15 @@ let write_generate_term t ~out_htbl ~inf_htbl ~out_c ~inf_c ~interp =
       if Hashtbl.mem out_htbl t' then ();
 
       interp t |> ignore;
-      Hashtbl.replace inf_htbl t' ();
-      write_term inf_c t'
+      Hashtbl.replace out_htbl t' ();
+      write_term out_c t'
     end
   with _ ->
     begin
       if Hashtbl.mem inf_htbl t' then ();
 
-      Hashtbl.replace out_htbl t' ();
-      write_term out_c t'
+      Hashtbl.replace inf_htbl t' ();
+      write_term inf_c t'
     end
 
 (* Weak terms writing *)

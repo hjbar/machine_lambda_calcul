@@ -36,4 +36,4 @@ type generate_state =
   | High
   | VeryHigh
 
-let generate_mode = Low
+let generate_mode = Off
