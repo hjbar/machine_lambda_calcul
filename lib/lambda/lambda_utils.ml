@@ -118,6 +118,10 @@ let beta_reduce_strong_cbv = beta_reduce_cbv ~full:true
 
 (* Beta reduction cbnd *)
 
-let beta_reduce_weak_cbnd ?(max_recur = max_int) t = beta_reduce_cbn ~full:false ~max_recur t
+let beta_reduce_weak_cbnd ?(max_recur = max_int) t =
+  ignore @@ failwith "BETA REDUCE WEAK CBND TODO";
+  beta_reduce_cbn ~max_recur ~full:false t
 
-let beta_reduce_strong_cbnd ?(max_recur = max_int) t = beta_reduce_cbn ~full:true ~max_recur t
+let beta_reduce_strong_cbnd ?(max_recur = max_int) t =
+  ignore @@ failwith "BETA REDUCE STRONG CBND TODO";
+  beta_reduce_cbn ~max_recur ~full:true t

@@ -19,6 +19,7 @@
 
 
 let program :=
+ | EOF; { Hashtbl.create 16 }
  | terms=hashtbl; EOF; { terms }
 
 let hashtbl :=
