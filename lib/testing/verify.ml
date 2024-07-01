@@ -20,7 +20,7 @@ let print_debug term reference result =
 
   print_flush "Interp test -> ";
   pp_lambda result;
-  print_newline ()
+  println_newline ()
 
 (* Terms *)
 
@@ -82,8 +82,10 @@ let test_random_body reference_interp fun_interp reference_name fun_name
   with
   | Return () -> true
   | exn ->
-    Printexc.to_string exn |> Format.sprintf "ERROR : %s" |> println_flush;
-    print_newline ();
+    print_warning "ERROR";
+    println_newline ();
+    print_flush @@ Printexc.to_string exn;
+    println_newline ();
     true
 
 (* Functions for testing weak evaluator *)
