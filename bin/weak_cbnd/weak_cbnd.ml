@@ -1,33 +1,9 @@
-open Printing
 open Testing
 
 let test () =
-  let error = ref false in
+  let naif_interp = Naif_interp.eval in
+  let cps_interp = Cps_interp.eval in
+  let defunc_interp = Defunc_interp.eval in
+  let version_name = "weak_cbnd" in
 
-  let () =
-    try
-      println_flush "Weak_cbnd tests :";
-      print_newline ();
-
-      test_random_weak_cbnd_with_reference Naif_interp.eval "naif";
-      test_random_weak_cbnd_with_reference Cps_interp.eval "cps";
-      test_random_weak_cbnd_with_reference Defunc_interp.eval "defunc";
-
-      test_random_weak Naif_interp.eval Cps_interp.eval "naif" "cps";
-      test_random_weak Naif_interp.eval Defunc_interp.eval "naif" "defunc";
-      test_random_weak Cps_interp.eval Defunc_interp.eval "cps" "defunc";
-
-      println_ok "Weak_cbnd tests : OK";
-      print_newline ()
-    with err ->
-      begin
-        println_warning @@ Printexc.to_string err;
-        print_newline ();
-
-        println_error "Weak_cbnd tests : ERROR";
-        print_newline ();
-        error := true
-      end
-  in
-
-  if !error then println_error "Weak_cbnd : ERROR" else println_ok "Weak_cbnd : OK"
+  test_weak_cbnd_all ~naif_interp ~cps_interp ~defunc_interp ~version_name

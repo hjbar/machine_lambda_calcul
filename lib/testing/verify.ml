@@ -20,7 +20,7 @@ let print_debug term reference result =
 
   print_flush "Interp test -> ";
   pp_lambda result;
-  print_newline ()
+  println_newline ()
 
 (* Terms *)
 
@@ -47,44 +47,45 @@ let weak_terms, strong_terms =
 let test_random_body reference_interp fun_interp reference_name fun_name
   ~(version : kind_reduction) =
   if debug then begin
-    let version = match version with Weak -> "Weak" | Strong -> "Strong" in
     let reference_name = String.capitalize_ascii reference_name in
     let fun_name = String.capitalize_ascii fun_name in
-    let msg =
-      Format.sprintf "Strat (%s) - testing between %s & %s : " version reference_name fun_name
-    in
-
+    let msg = Format.sprintf "Testing between %s & %s : " reference_name fun_name in
     print_flush msg
   end;
 
   let htbl = Option.get @@ match version with Weak -> weak_terms | Strong -> strong_terms in
-  let cpt = ref max_terms_tested in
 
-  let () =
-    try
-      Hashtbl.iter
-        begin
-          fun term () ->
-            let term = de_bruijn_to_lambda term in
+  try
+    Hashtbl.iter
+      begin
+        fun term () ->
+          let term = de_bruijn_to_lambda term in
 
-            let reference = reference_interp term in
-            let result = fun_interp term in
+          let reference = reference_interp term in
+          let result = fun_interp term in
 
-            if not @@ alpha_equiv reference result then begin
-              if debug then print_debug term reference result;
-              failwith "ERROR"
-            end;
+          if not @@ alpha_equiv reference result then begin
+            println_warning "ERROR";
+            if debug then print_debug term reference result;
 
-            decr cpt;
-            if !cpt = 0 then raise (Return ())
-        end
-        htbl
-    with Return () -> ()
-  in
+            raise (Return ())
+          end
+      end
+      htbl;
 
-  if debug then begin
-    println_data "OK";
-    print_newline ()
+    if debug then begin
+      println_data "OK";
+      print_newline ()
+    end;
+
+    false
+  with
+  | Return () -> true
+  | exn -> begin
+    print_warning "ERROR : ";
+    print_flush @@ Printexc.to_string exn;
+    println_newline ();
+    true
   end
 
 (* Functions for testing weak evaluator *)
