@@ -1,6 +1,3 @@
-type expr =
-  | Var of int
-  | App of expr * expr
-  | Abs of expr
+include De_bruijn
 
-type program = expr list
+type program = (de_bruijn_term, unit) Hashtbl.t

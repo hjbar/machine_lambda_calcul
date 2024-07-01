@@ -1,17 +1,5 @@
 open Lambda
-open Parse
 open De_bruijn_def
-
-let rec expr_to_de_bruijn (e : expr) : de_bruijn_term =
-  match e with
-  | Var x -> Var x
-  | App (e1, e2) ->
-    let t1 = expr_to_de_bruijn e1 in
-    let t2 = expr_to_de_bruijn e2 in
-    App (t1, t2)
-  | Abs e ->
-    let t = expr_to_de_bruijn e in
-    Abs t
 
 let lambda_to_de_bruijn (t : lambda_term) : de_bruijn_term =
   let rec loop (t : lambda_term) (d : int) (l : string list) : de_bruijn_term =

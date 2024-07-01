@@ -1,10 +1,7 @@
 open Lambda
-open De_bruijn
 open Printing
-open Utils
 open Parse
 open State
-open Globals
 open Generators
 
 (* Interpters of reference *)
@@ -21,31 +18,11 @@ let write_term out_c t = output_string out_c @@ Format.sprintf "%s ;\n" (de_brui
 
 (* File to htbl *)
 
-let file_to_htbl file limit =
-  let terms = parse_file file in
-  let htbl = Hashtbl.create 16 in
+let weak_terms_htbl () = parse_file weak_lambda_file
 
-  let () =
-    try
-      List.iteri
-        begin
-          fun i t ->
-            if i = limit then raise (Return ());
+let strong_terms_htbl () = parse_file strong_lambda_file
 
-            let t' = expr_to_de_bruijn t in
-            Hashtbl.replace htbl t' ()
-        end
-        terms
-    with Return () -> ()
-  in
-
-  htbl
-
-let weak_terms_htbl ?(limit = max_int) () = file_to_htbl weak_lambda_file limit
-
-let strong_terms_htbl ?(limit = max_int) () = file_to_htbl strong_lambda_file limit
-
-let infinite_terms_htbl ?(limit = max_int) () = file_to_htbl infinite_lambda_file limit
+let infinite_terms_htbl () = parse_file infinite_lambda_file
 
 (* General terms writing *)
 

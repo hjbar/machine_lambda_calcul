@@ -4,7 +4,6 @@ open Printing
 open Utils
 open State
 open Writing
-open Globals
 
 (* Utils *)
 
@@ -32,14 +31,13 @@ let weak_terms, strong_terms =
 
     let weak_terms_htbl, strong_terms_htbl =
       match testing_mode with
-      | WeakOnly -> (Option.some @@ weak_terms_htbl ~limit:max_terms_tested (), None)
-      | StrongOnly -> (None, Option.some @@ strong_terms_htbl ~limit:max_terms_tested ())
-      | All ->
-        ( Option.some @@ weak_terms_htbl ~limit:max_terms_tested ()
-        , Option.some @@ strong_terms_htbl ~limit:max_terms_tested () )
+      | WeakOnly -> (Option.some @@ weak_terms_htbl (), None)
+      | StrongOnly -> (None, Option.some @@ strong_terms_htbl ())
+      | All -> (Option.some @@ weak_terms_htbl (), Option.some @@ strong_terms_htbl ())
     in
 
     Sys.command "clear" |> ignore;
+
     (weak_terms_htbl, strong_terms_htbl)
   end
   | _ -> (None, None)

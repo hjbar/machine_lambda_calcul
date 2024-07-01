@@ -7,4 +7,5 @@
  (infer true))
 
 (library
- (name parse))
+ (name parse)
+ (libraries state de_bruijn))
