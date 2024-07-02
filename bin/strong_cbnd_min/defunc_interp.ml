@@ -66,7 +66,7 @@ and interp (t : extended_terms) (e : env) (k : cont list) : extended_closure =
     match find_opt x e with
     | None ->
       let t' = Ext [ Cst x ] in
-      let e' = add x (ref @@ Delayed (Var x, e)) e in
+      let e' = add x (ref @@ Delayed (t', e)) e in
       apply t' e' k
     | Some var -> begin
       match !var with

@@ -46,7 +46,7 @@ and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended
     match find_opt x e with
     | None ->
       let t' = Ext [ Cst x ] in
-      let e' = add x (Var x, e) e in
+      let e' = add x (t', e) e in
       apply t' e' k
     | Some (t', e') -> apply t' e' k
   end
@@ -74,9 +74,7 @@ and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_
       in
       let ext' = Ext (l @ l') in
       (ext', e)
-    | Var _ | App _ ->
-      let t2' = interp t2 e2 [] |> fst in
-      apply (App (t, t2')) e k'
+    | _ -> assert false
   end
 
 and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
