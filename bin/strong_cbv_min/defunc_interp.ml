@@ -58,9 +58,14 @@ and apply_value (v : value) (e : env) (k : extended_closure list) : value_closur
 
 and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
   match t with
-  | Var x ->
-    let t', e' = Option.value ~default:(Ext [ Cst x ], empty) (find_opt x e) in
-    apply t' e' k
+  | Var x -> begin
+    match find_opt x e with
+    | None ->
+      let t' = Ext [ Cst x ] in
+      let e' = add x (Var x, e) e in
+      apply t' e' k
+    | Some (t', e') -> apply t' e' k
+  end
   | App (t1, t2) -> interp t1 e ((t2, e) :: k)
   | Abs _ | Ext _ -> apply t e k
 
@@ -85,7 +90,9 @@ and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_
       in
       let ext' = Ext (l @ l') in
       (ext', e)
-    | _ -> assert false
+    | Var _ | App _ ->
+      let t2' = interp t2 e2 [] |> fst in
+      apply (App (t, t2')) e k'
   end
 
 and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
