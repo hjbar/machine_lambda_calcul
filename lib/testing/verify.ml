@@ -65,8 +65,10 @@ let test_random_body reference_interp fun_interp reference_name fun_name
           let result = fun_interp term in
 
           if not @@ alpha_equiv reference result then begin
-            println_warning "ERROR";
-            if debug then print_debug term reference result;
+            if debug then begin
+              println_warning "ERROR";
+              print_debug term reference result
+            end;
 
             raise (Return ())
           end
@@ -82,10 +84,13 @@ let test_random_body reference_interp fun_interp reference_name fun_name
   with
   | Return () -> true
   | exn ->
-    print_warning "ERROR";
-    println_newline ();
-    print_flush @@ Printexc.to_string exn;
-    println_newline ();
+    if debug then begin
+      print_warning "ERROR";
+      println_newline ();
+      print_flush @@ Printexc.to_string exn;
+      println_newline ()
+    end;
+
     true
 
 (* Functions for testing weak evaluator *)

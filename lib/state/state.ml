@@ -19,14 +19,14 @@ type testing_state =
   | High
   | Full
 
-let testing_speed = Full
+let testing_speed = Fast
 
 type kind_testing =
   | WeakOnly
   | StrongOnly
   | All
 
-let testing_mode = StrongOnly
+let testing_mode = All
 
 (* Generate parameters *)
 
