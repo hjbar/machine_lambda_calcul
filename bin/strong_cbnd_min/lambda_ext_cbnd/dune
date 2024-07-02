@@ -1,0 +1,3 @@
+(library
+ (name lambda_ext_cbnd)
+ (libraries lambda))

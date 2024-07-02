@@ -1,89 +1,66 @@
 (* Definition of types *)
 
-open Lambda_ext
-open Env
+open Lambda
+open Lambda_ext_cbnd
 
-(* Strong Cbnd Interp *)
+type ext_cont = extended_term -> extended_term
 
-let rec norm (b : extended_terms) (e : env) (k : extended_closure -> extended_closure) :
-  extended_closure =
-  let b', e' = value b e Fun.id in
-  readback b' e' k
+type val_clo_cont = value_closure -> extended_term
 
-and readback (v : value) (e : env) (k : extended_closure -> extended_closure) :
-  extended_closure =
+(* Strong Call By Value Evaluator *)
+
+let rec norm (t : extended_term) (e : env) (k : ext_cont) : extended_term =
+  value t e @@ fun (v, e') -> readback v e' k
+
+and readback (v : value) (e : env) (k : ext_cont) : extended_term =
   match v with
-  | Cst x -> k (Var x, e)
+  | Cst x -> k @@ Var x
   | Lam (x, b) ->
     let y = gensym () in
-    let e = add x (ref @@ Delayed (Var y, e)) e in
+    let t = App (Abs (x, b), Ext (y, [])) in
+    norm t e @@ fun t' -> k @@ Abs (y, t')
+  | Lst (x, l) -> lst_to_app (Var x) l k
 
-    let t = App (Abs (x, b), Ext [ Cst y ]) in
-    norm t e @@ fun (t', e') -> k (Abs (y, t'), e')
-  | Lst l ->
-    Cps.map (fun v -> readback v e) l @@ fun l' ->
-    let t_opt =
-      List.fold_left
-        begin
-          fun acc (t, _) -> match acc with None -> Some t | Some acc' -> Some (App (acc', t))
-        end
-        None l'
-    in
-    k (Option.get t_opt, e)
+and lst_to_app (t : extended_term) (args : value_closure list) (k : ext_cont) : extended_term =
+  match args with
+  | [] -> k t
+  | (v, e) :: args' -> readback v e @@ fun t' -> lst_to_app (App (t, t')) args' k
 
-and value (b : extended_terms) (e : env) (k : value_closure -> value_closure) : value_closure =
-  let b', e' = weak_eval b e in
-  match b' with
-  | Var x -> k (Cst x, e')
-  | App (t1, t2) ->
-    value t1 e' @@ fun (t1', _) ->
-    value t2 e' @@ fun (t2', _) -> k (Lst [ t1'; t2' ], e')
-  | Abs (x, t) -> k (Lam (x, t), e')
-  | Ext l -> k (Lst l, e')
+(* Evaluator for normal form *)
 
-(* Weak Cbnd Eval *)
-
-and interp (t : extended_terms) (e : env) (k : cont list) : extended_closure =
+and value (t : extended_term) (e : env) (k : val_clo_cont) : extended_term =
   match t with
   | Var x -> begin
     match find_opt x e with
     | None ->
-      let t' = Ext [ Cst x ] in
-      let e' = add x (ref @@ Delayed (t', e)) e in
-      apply t' e' k
+      let v = Lst (x, []) in
+      k (v, e)
     | Some var -> begin
       match !var with
-      | Delayed (t', e') -> interp t' e' (CONT1 var :: k)
-      | Computed (t', e') -> apply t' e' k
+      | Delayed (t', e') ->
+        value t' e' @@ fun closure ->
+        var := Computed closure;
+        k closure
+      | Computed closure -> k closure
     end
   end
-  | App (t1, t2) -> interp t1 e (CONT2 (ref @@ Delayed (t2, e)) :: k)
-  | Abs _ | Ext _ -> apply t e k
-
-and apply (t : extended_terms) (e : env) (k : cont list) : extended_closure =
-  match k with
-  | [] -> (t, e)
-  | CONT1 var :: k' ->
-    var := Computed (t, e);
-    apply t e k'
-  | CONT2 var :: k' -> begin
-    match t with
-    | Abs (x, t') ->
-      let e' = add x var e in
-      interp t' e' k'
-    | Ext l ->
-      let t2, e2 = unwrap var in
-      let t2', e2' = interp t2 e2 [] in
-      let v = value t2' e2' Fun.id |> fst in
-      let ext' = Ext (l @ [ v ]) in
-      apply ext' e k'
+  | Abs (x, t') -> k (Lam (x, t'), e)
+  | Ext (x, l) -> k (Lst (x, l), e)
+  | App (t1, t2) -> begin
+    value t1 e @@ fun (v, e') ->
+    match v with
+    | Lam (x, t') ->
+      let e' = add x (ref @@ Delayed (t2, e)) e' in
+      value t' e' k
+    | Lst (x, l) ->
+      value t2 e @@ fun closure ->
+      let v' = Lst (x, l @ [ closure ]) in
+      k (v', e')
     | _ -> assert false
   end
 
-and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
+(* The function of strong cbv eval *)
 
-(* Functions of eval *)
-
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   gensym_reset ();
-  norm (term_to_extended t) empty Fun.id |> fst |> extended_to_term
+  norm (term_to_extended t) empty Fun.id |> extended_to_term

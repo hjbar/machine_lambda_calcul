@@ -1,86 +1,56 @@
-open Lambda_ext
-open Env
+(* Definition of types *)
+
+open Lambda
+open Lambda_ext_cbv
+
+type ext_cont = extended_term -> extended_term
+
+type val_clo_cont = value_closure -> extended_term
 
 (* Strong Call By Value Evaluator *)
 
-let rec n (b : extended_terms) (e : env) (k : extended_closure -> extended_closure) :
-  extended_closure =
-  let b', e' = v b e Fun.id in
-  r b' e' k
+let rec norm (t : extended_term) (e : env) (k : ext_cont) : extended_term =
+  value t e @@ fun (v, e') -> readback v e' k
 
-and r (v : value) (e : env) (k : extended_closure -> extended_closure) : extended_closure =
+and readback (v : value) (e : env) (k : ext_cont) : extended_term =
   match v with
-  | Cst x -> k (Var x, e)
+  | Cst x -> k @@ Var x
   | Lam (x, b) ->
     let y = gensym () in
-    let e = add x (Var y, e) e in
+    let t = App (Abs (x, b), Ext (y, [])) in
+    norm t e @@ fun t' -> k @@ Abs (y, t')
+  | Lst (x, l) -> lst_to_app (Var x) l k
 
-    let t = App (Abs (x, b), Ext [ Cst y ]) in
-    n t e @@ fun (t', e') -> k (Abs (y, t'), e')
-  | Lst l ->
-    Cps.map (fun v -> r v e) l @@ fun l' ->
-    let t_opt =
-      List.fold_left
-        begin
-          fun acc (t, _) -> match acc with None -> Some t | Some acc' -> Some (App (acc', t))
-        end
-        None l'
-    in
-    k (Option.get t_opt, e)
+and lst_to_app (t : extended_term) (args : value_closure list) (k : ext_cont) : extended_term =
+  match args with
+  | [] -> k t
+  | (v, e) :: args' -> readback v e @@ fun t' -> lst_to_app (App (t, t')) args' k
 
-and v (t : extended_terms) (e : env) (k : value_closure -> value_closure) : value_closure =
-  let t', e' = weak_eval t e in
-  match t' with
-  | Var x -> k (Cst x, e')
-  | App (t1, t2) ->
-    v t1 e' @@ fun (t1', _) ->
-    v t2 e' @@ fun (t2', _) -> k (Lst [ t1'; t2' ], e')
-  | Abs (x, t) -> k (Lam (x, t), e')
-  | Ext l -> k (Lst l, e')
+(* Evaluator for normal form *)
 
-(* Evaluator for weak normal form *)
-
-and interp (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
+and value (t : extended_term) (e : env) (k : val_clo_cont) : extended_term =
   match t with
-  | Var x -> begin
-    match find_opt x e with
-    | None ->
-      let t' = Ext [ Cst x ] in
-      let e' = add x (t', e) e in
-      apply t' e' k
-    | Some (t', e') -> apply t' e' k
-  end
-  | App (t1, t2) -> interp t1 e ((t2, e) :: k)
-  | Abs _ | Ext _ -> apply t e k
-
-and apply (t : extended_terms) (e : env) (k : extended_closure list) : extended_closure =
-  match k with
-  | [] -> (t, e)
-  | (t2, e2) :: k' -> begin
-    match t with
-    | Abs (x, t') ->
-      let closure = interp t2 e2 [] in
-      let e' = add x closure e in
-      interp t' e' k'
-    | Ext l ->
-      let l' =
-        List.map
-          begin
-            fun (t, e) ->
-              let t', e' = interp t e [] in
-              v t' e' Fun.id |> fst
-          end
-          k
-      in
-      let ext' = Ext (l @ l') in
-      (ext', e)
+  | Var x ->
+    let default = (Lst (x, []), e) in
+    k @@ Option.value ~default (find_opt x e)
+  | Abs (x, t') -> k (Lam (x, t'), e)
+  | Ext (x, l) -> k (Lst (x, l), e)
+  | App (t1, t2) -> begin
+    value t1 e @@ fun (v, e') ->
+    match v with
+    | Lam (x, t') ->
+      value t2 e @@ fun closure ->
+      let e' = add x closure e' in
+      value t' e' k
+    | Lst (x, l) ->
+      value t2 e @@ fun closure ->
+      let v' = Lst (x, l @ [ closure ]) in
+      k (v', e')
     | _ -> assert false
   end
-
-and weak_eval (t : extended_terms) (e : env) : extended_closure = interp t e []
 
 (* The function of strong cbv eval *)
 
 let eval (t : lambda_term) : lambda_term =
   gensym_reset ();
-  n (term_to_extended t) empty Fun.id |> fst |> extended_to_term
+  norm (term_to_extended t) empty Fun.id |> extended_to_term

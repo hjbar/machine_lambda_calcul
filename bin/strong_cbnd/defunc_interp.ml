@@ -1,8 +1,5 @@
 open Lambda
 
-(* The functions of eval *)
-
-let eval t =
+let eval (t : lambda_term) : lambda_term =
   ignore @@ failwith "DEFUNC TODO";
-  pp_lambda t;
   t
