@@ -5,7 +5,7 @@ clean:
 
 full_clean:
 	@dune clean
-	@rm -rf tests/*
+	@rm -rf tests
 
 build:
 	@dune build

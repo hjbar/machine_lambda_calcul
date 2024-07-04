@@ -1,10 +1,12 @@
 (* Files for generating lambda-terms *)
 
-let weak_lambda_file = "tests/weak_lambda_terms.lamb"
+let tests_dir = "tests/"
 
-let strong_lambda_file = "tests/strong_lambda_terms.lamb"
+let weak_lambda_file = tests_dir ^ "weak_lambda_terms.lamb"
 
-let infinite_lambda_file = "tests/infinite_lambda_terms.lamb"
+let strong_lambda_file = tests_dir ^ "strong_lambda_terms.lamb"
+
+let infinite_lambda_file = tests_dir ^ "infinite_lambda_terms.lamb"
 
 (* Debug printing *)
 
