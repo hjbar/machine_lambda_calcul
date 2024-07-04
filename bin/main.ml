@@ -23,19 +23,25 @@ let () =
       Weak_cbv.test ();
 
       print_sep ();
-      Weak_cbnd.test ()
+      Weak_cbnd.test ();
+
+      print_sep ()
     | StrongOnly ->
       print_sep ();
-      Strong_cbv.test ();
+      Strong_cbv_readback.test ();
 
       print_sep ();
-      Strong_cbv_min.test ();
+      Strong_cbnd_readback.test ();
 
-      print_sep ();
-      Strong_cbnd.test ();
+      if with_sem then begin
+        print_sep ();
+        Strong_cbv_sem.test ();
 
-      print_sep ();
-      Strong_cbnd_min.test ()
+        print_sep ();
+        Strong_cbnd_sem.test ()
+      end;
+
+      print_sep ()
     | All ->
       print_sep ();
       Weak_cbn.test ();
@@ -47,15 +53,19 @@ let () =
       Weak_cbnd.test ();
 
       print_sep ();
-      Strong_cbv.test ();
+      Strong_cbv_readback.test ();
 
       print_sep ();
-      Strong_cbv_min.test ();
+      Strong_cbnd_readback.test ();
 
-      print_sep ();
-      Strong_cbnd.test ();
+      if with_sem then begin
+        print_sep ();
+        Strong_cbv_sem.test ();
 
-      print_sep ();
-      Strong_cbnd_min.test ()
+        print_sep ();
+        Strong_cbnd_sem.test ()
+      end;
+
+      print_sep ()
   end
   | _ -> generate_terms ()

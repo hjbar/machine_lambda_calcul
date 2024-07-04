@@ -2,11 +2,11 @@
  (name main)
  (libraries
   printing
+  state
   weak_cbn
   weak_cbv
   weak_cbnd
-  strong_cbv_min
-  strong_cbv
-  strong_cbnd
-  strong_cbnd_min
-  state))
+  strong_cbv_readback
+  strong_cbnd_readback
+  strong_cbv_sem
+  strong_cbnd_sem))

@@ -6,4 +6,4 @@ let test () =
   let defunc_interp = Defunc_interp.eval in
   let version_name = "weak_cbn" in
 
-  test_weak_cbn_all ~naif_interp ~cps_interp ~defunc_interp ~version_name
+  test_weak_cbn_opti ~naif_interp ~cps_interp ~defunc_interp ~version_name

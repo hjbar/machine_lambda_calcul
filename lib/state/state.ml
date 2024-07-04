@@ -8,7 +8,7 @@ let infinite_lambda_file = "tests/infinite_lambda_terms.lamb"
 
 (* Debug printing *)
 
-let debug = true
+let debug = false
 
 (* Testing parameters *)
 
@@ -19,14 +19,16 @@ type testing_state =
   | High
   | Full
 
-let testing_speed = Full
+let testing_speed = Fast
 
 type kind_testing =
   | WeakOnly
   | StrongOnly
   | All
 
-let testing_mode = StrongOnly
+let testing_mode = All
+
+let with_sem = false
 
 (* Generate parameters *)
 

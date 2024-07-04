@@ -4,6 +4,8 @@ type env = Env of value_closure StringMap.t
 
 and value_closure = value * env
 
+and ext_closure = extended_term * env
+
 and extended_term =
   | Var of string
   | App of extended_term * extended_term
