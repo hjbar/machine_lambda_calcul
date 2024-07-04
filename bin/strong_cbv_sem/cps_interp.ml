@@ -3,9 +3,13 @@
 open Lambda
 open Env
 
+type lamb_cont = lambda_term -> lambda_term
+
+type sem_cont = sem -> sem
+
 (* Functions for interp *)
 
-let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
+let rec reify (s : sem) (k : lamb_cont) : lambda_term =
   match s with
   | Sem f ->
     let x = gensym () in
@@ -13,14 +17,14 @@ let rec reify (s : sem) (k : lambda_term -> lambda_term) : lambda_term =
   | Neutral l -> k @@ l ()
   | Cache (c, v) -> k @@ cached_call c (fun () -> reify v Fun.id)
 
-let rec from_sem (s1 : sem) (s2 : sem) (k : sem -> sem) : sem =
+let rec from_sem (s1 : sem) (s2 : sem) (k : sem_cont) : sem =
   match s1 with
   | Sem f -> k @@ f s2
   | Neutral l -> apply_neutral l s2 k
   | Cache (c, Neutral l) -> apply_neutral (fun () -> cached_call c l) s2 k
   | Cache (_, v) -> from_sem v s2 k
 
-and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem -> sem) : sem =
+and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem_cont) : sem =
   let f () =
     reify v @@ fun v' ->
     let l' = l () in
@@ -28,7 +32,7 @@ and apply_neutral (l : unit -> lambda_term) (v : sem) (k : sem -> sem) : sem =
   in
   k @@ Neutral f
 
-let rec interp (t : lambda_term) (e : env) (k : sem -> sem) : sem =
+let rec interp (t : lambda_term) (e : env) (k : sem_cont) : sem =
   match t with
   | Var x -> k @@ env_lookup x e
   | Abs (x, t') ->
