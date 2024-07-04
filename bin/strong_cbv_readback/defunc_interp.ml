@@ -6,7 +6,7 @@ open Lambda_ext_cbv
 type ext_cont =
   | Id
   | ArgsToApp of extended_term * value_closure list * ext_cont
-  | RebuildABs of string * ext_cont
+  | RebuildAbs of string * ext_cont
 
 type val_cont =
   | Readback of ext_cont
@@ -17,7 +17,7 @@ type val_cont =
 (* Strong Call By Value Evaluator *)
 
 let rec norm (t : extended_term) (e : env) (k : ext_cont) : extended_term =
-  value t e (Readback k)
+  value t e @@ Readback k
 
 and readback (v : value) (e : env) (k : ext_cont) : extended_term =
   match v with
@@ -25,19 +25,19 @@ and readback (v : value) (e : env) (k : ext_cont) : extended_term =
   | Lam (x, b) ->
     let y = gensym () in
     let t = App (Abs (x, b), Ext (y, [])) in
-    norm t e (RebuildABs (y, k))
+    norm t e @@ RebuildAbs (y, k)
   | Lst (x, l) -> lst_to_app (Var x) l k
 
 and lst_to_app (t : extended_term) (args : value_closure list) (k : ext_cont) : extended_term =
   match args with
   | [] -> apply_ext t k
-  | (v, e) :: args' -> readback v e (ArgsToApp (t, args', k))
+  | (v, e) :: args' -> readback v e @@ ArgsToApp (t, args', k)
 
 and apply_ext (t : extended_term) (k : ext_cont) : extended_term =
   match k with
   | Id -> t
   | ArgsToApp (t', args, k') -> lst_to_app (App (t', t)) args k'
-  | RebuildABs (y, k') -> apply_ext (Abs (y, t)) k'
+  | RebuildAbs (y, k') -> apply_ext (Abs (y, t)) k'
 
 (* Evaluator for normal form *)
 
@@ -49,7 +49,7 @@ and value (t : extended_term) (e : env) (k : val_cont) : extended_term =
     apply_val t' e' k
   | Abs (x, t') -> apply_val (Lam (x, t')) e k
   | Ext (x, l) -> apply_val (Lst (x, l)) e k
-  | App (t1, t2) -> value t1 e (Val (t2, e, k))
+  | App (t1, t2) -> value t1 e @@ Val (t2, e, k)
 
 and apply_val (v : value) (e : env) (k : val_cont) : extended_term =
   match k with
@@ -62,8 +62,8 @@ and apply_val (v : value) (e : env) (k : val_cont) : extended_term =
     apply_val v' e' k'
   | Val (t2, e2, k') -> begin
     match v with
-    | Lam (x, t) -> value t2 e2 (CaseLam (x, t, e, k'))
-    | Lst (x, l) -> value t2 e2 (CaseLst (x, l, e, k'))
+    | Lam (x, t) -> value t2 e2 @@ CaseLam (x, t, e, k')
+    | Lst (x, l) -> value t2 e2 @@ CaseLst (x, l, e, k')
     | _ -> assert false
   end
 
