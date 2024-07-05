@@ -5,14 +5,14 @@ open Lambda_ext_cbnd
 
 type ext_cont =
   | Id
-  | ArgsToApp of extended_term * value_closure list * ext_cont
   | RebuildAbs of string * ext_cont
+  | ArgsToApp of extended_term * value_closure list * ext_cont
 
 type val_cont =
   | Readback of ext_cont
-  | Val of extended_term * env * val_cont
   | StoreVal of stoval ref * val_cont
   | CaseLst of string * value_closure list * env * val_cont
+  | Val of extended_term * env * val_cont
 
 (* Strong Call By Value Evaluator *)
 

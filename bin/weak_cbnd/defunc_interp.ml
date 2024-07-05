@@ -4,8 +4,8 @@ open Lambda
 open Env
 
 type cont =
-  | CONT1 of stoval ref
-  | CONT2 of stoval ref
+  | StoreVal of stoval ref
+  | EvalApp of stoval ref
 
 (* Functions of interp *)
 
@@ -14,19 +14,19 @@ let rec interp (t : lambda_term) (e : env) (k : cont list) : closure =
   | Var x -> begin
     let var = find x e in
     match !var with
-    | Delayed (t', e') -> interp t' e' (CONT1 var :: k)
+    | Delayed (t', e') -> interp t' e' (StoreVal var :: k)
     | Computed v -> apply v k
   end
   | Abs _ -> apply (t, e) k
-  | App (t1, t2) -> interp t1 e (CONT2 (ref @@ Delayed (t2, e)) :: k)
+  | App (t1, t2) -> interp t1 e (EvalApp (ref @@ Delayed (t2, e)) :: k)
 
 and apply (v : closure) (k : cont list) : closure =
   match k with
   | [] -> v
-  | CONT1 var :: k' ->
+  | StoreVal var :: k' ->
     var := Computed v;
     apply v k'
-  | CONT2 var :: k' -> begin
+  | EvalApp var :: k' -> begin
     match v with
     | Abs (x, t'), e' ->
       let e' = add x var e' in
