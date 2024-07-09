@@ -5,8 +5,8 @@ open Lambda_ext_cbv
 
 (* Strong Call By Value Evaluator *)
 
-let rec norm (t : extended_term) (e : env) : extended_term =
-  let v, e' = value t e in
+let rec norm (b : extended_term) (e : env) : extended_term =
+  let v, e' = value b e in
   readback v e'
 
 and readback (v : value) (e : env) : extended_term =
@@ -20,30 +20,30 @@ and readback (v : value) (e : env) : extended_term =
     Abs (y, t')
   | Lst (x, l) -> lst_to_app (Var x) l
 
-and lst_to_app (t : extended_term) (args : value_closure list) : extended_term =
+and lst_to_app (b : extended_term) (args : value_closure list) : extended_term =
   match args with
-  | [] -> t
+  | [] -> b
   | (v, e) :: args' ->
-    let t' = readback v e in
-    lst_to_app (App (t, t')) args'
+    let b' = readback v e in
+    lst_to_app (App (b, b')) args'
 
 (* Evaluator for normal form *)
 
-and value (t : extended_term) (e : env) : value_closure =
-  match t with
+and value (b : extended_term) (e : env) : value_closure =
+  match b with
   | Var x ->
     let default = (Lst (x, []), e) in
     Option.value ~default (find_opt x e)
-  | Abs (x, t') -> (Lam (x, t'), e)
+  | Abs (x, b') -> (Lam (x, b'), e)
   | Ext (x, l) -> (Lst (x, l), e)
-  | App (t1, t2) -> begin
-    match value t1 e with
-    | Lam (x, t'), e' ->
-      let closure = value t2 e in
+  | App (b1, b2) -> begin
+    match value b1 e with
+    | Lam (x, b'), e' ->
+      let closure = value b2 e in
       let e' = add x closure e' in
-      value t' e'
+      value b' e'
     | Lst (x, l), e' ->
-      let closure = value t2 e in
+      let closure = value b2 e in
       let v' = Lst (x, l @ [ closure ]) in
       (v', e')
     | _ -> assert false
@@ -53,4 +53,7 @@ and value (t : extended_term) (e : env) : value_closure =
 
 let eval (t : lambda_term) : lambda_term =
   gensym_reset ();
-  norm (term_to_extended t) empty |> extended_to_term
+
+  let b = term_to_extended t in
+  let b' = norm b empty in
+  extended_to_term b'
