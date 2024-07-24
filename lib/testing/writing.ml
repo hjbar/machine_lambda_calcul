@@ -1,4 +1,3 @@
-open Lambda
 open Printing
 open Parse
 open State
@@ -6,15 +5,16 @@ open Generators
 
 (* Interpters of reference *)
 
-let weak_interp = beta_reduce_weak_cbv ~max_recur:max_recursions
+let weak_interp = Lambda.beta_reduce_weak_cbv ~max_recur:max_recursions
 
-let strong_interp = beta_reduce_strong_cbv ~max_recur:max_recursions
+let strong_interp = Lambda.beta_reduce_strong_cbv ~max_recur:max_recursions
 
 (* Writing utils *)
 
 let open_out_file file = open_out_gen [ Open_append; Open_creat ] 0o666 file
 
-let write_term out_c t = output_string out_c @@ Format.sprintf "%s ;\n" (de_bruijn_to_string t)
+let write_term out_c t =
+  output_string out_c @@ Format.sprintf "%s ;\n" (De_bruijn.de_bruijn_to_string t)
 
 (* File to htbl *)
 
@@ -27,7 +27,7 @@ let infinite_terms_htbl () = parse_file infinite_lambda_file
 (* General terms writing *)
 
 let write_generate_term t ~out_htbl ~inf_htbl ~out_c ~inf_c ~interp =
-  let t' = lambda_to_de_bruijn t in
+  let t' = De_bruijn.lambda_to_de_bruijn t in
 
   try
     if not @@ Hashtbl.mem out_htbl t' then begin

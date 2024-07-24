@@ -1,7 +1,4 @@
 open Lambda_def
-open Lambda_enum
-
-val get_gensym : kind:kind_gensym -> (unit -> string) * (unit -> unit)
 
 val alpha_equiv : lambda_term -> lambda_term -> bool
 

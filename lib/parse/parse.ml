@@ -1,5 +1,3 @@
-include Lamb
-
 let open_in_file file = open_in_gen [ Open_rdonly; Open_creat ] 0o666 file
 
 let parse_file file =
